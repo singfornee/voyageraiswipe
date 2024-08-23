@@ -11,10 +11,6 @@ interface BucketListCardProps {
   isVisitedCard?: boolean; // Add this prop to differentiate between visited and bucket list
 }
 
-const normalizeString = (str: string): string => {
-  return str.toLowerCase().trim();
-};
-
 const BucketListCard: React.FC<BucketListCardProps> = ({ activity, onMarkAsVisited, onDelete, isVisitedCard }) => {
   const theme = useTheme(); // Access the theme
   const [open, setOpen] = useState(false);
