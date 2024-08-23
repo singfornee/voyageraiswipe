@@ -1,0 +1,5 @@
+.activity-card-container {
+  max-width: 600px; /* Ensures the card has a max width for readability */
+  width: 100%;
+  margin-bottom: 16px;
+}

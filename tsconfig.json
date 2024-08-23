@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+      "target": "es5",                          // Target JavaScript version (ES5 for broader compatibility)
+      "lib": ["dom", "dom.iterable", "esnext"], // Include libraries for DOM and ESNext features
+      "allowJs": true,                          // Allow JavaScript files to be compiled
+      "skipLibCheck": true,                     // Skip type checking of declaration files
+      "esModuleInterop": true,                  // Enables interop between CommonJS and ES Modules
+      "allowSyntheticDefaultImports": true,     // Allow default imports from modules with no default export
+      "strict": true,                           // Enable all strict type-checking options
+      "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file
+      "module": "esnext",                       // Set module code generation: "CommonJS" or "ESNext"
+      "moduleResolution": "node",               // Use Node.js module resolution
+      "resolveJsonModule": true,                // Allow importing .json files
+      "isolatedModules": true,                  // Treat each file as a separate module
+      "noEmit": true,                           // Don't emit output (we're just type-checking)
+      "jsx": "react-jsx",                       // Use the new JSX transform in React 17+
+      "baseUrl": "./src",                       // Base URL to resolve non-relative module names
+      "paths": {
+        "*": ["types/*"]                        // Path mapping to resolve module imports
+      }
+    },
+    "include": ["src"],                         // Include the src directory for compilation
+    "exclude": ["node_modules", "build"]        // Exclude node_modules and build directories
+  }
+  

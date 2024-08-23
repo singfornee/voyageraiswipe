@@ -1,0 +1,70 @@
+﻿attraction_id,attraction_name,attraction_category,attraction_subcategory,location_city,location_country,opening_hour,latitude,longitude
+1,Tower of London,historic site,castle,London,UK,"Mon-Fri: 9:00-17:30, Sat-Sun: 10:00-17:30",51.5081,-0.0761
+2,Kensington Palace,historic site,royal residence,London,UK,Mon-Sun: 10:00-18:00,51.5059,-0.1877
+3,Buckingham Palace,historic site,royal residence,London,UK,Mon-Sun: 9:30-19:30,51.5014,-0.1419
+4,Hampton Court Palace,historic site,royal residence,London,UK,Mon-Sun: 10:00-16:30,51.4036,-0.3372
+5,Windsor Castle,historic site,royal residence,Windsor,UK,Mon-Sun: 10:00-17:15,51.4839,-0.6044
+6,Eltham Palace,historic site,royal residence,London,UK,"Mon-Fri: 10:00-16:00, Sat-Sun: 10:00-17:00",51.45,0.0508
+7,Lambeth Palace,historic site,royal residence,London,UK,Mon-Fri: 9:00-17:00,51.4932,-0.1195
+8,St James's Palace,historic site,royal residence,London,UK,Mon-Fri: 10:00-16:00,51.5045,-0.1391
+9,Whitehall Palace (Banqueting House),historic site,royal residence,London,UK,Mon-Sun: 10:00-17:00,51.5042,-0.1254
+10,Fulham Palace,historic site,royal residence,London,UK,"Mon-Fri: 9:00-17:00, Sat-Sun: 9:00-16:00",51.468,-0.2106
+11,Richmond Palace,historic site,royal residence,London,UK,Mon-Sun: 10:00-16:00,51.4587,-0.3073
+12,Greenwich Palace,historic site,royal residence,London,UK,Mon-Sun: 10:00-17:00,51.4811,-0.0094
+13,The Queen's House,historic site,royal residence,London,UK,Wed-Mon: 10:00-17:00,51.481,-0.0089
+14,Clarence House,historic site,royal residence,London,UK,Mon-Fri: 10:00-16:00,51.5038,-0.1401
+15,Marlborough House,historic site,royal residence,London,UK,Mon-Fri: 10:00-16:00,51.5044,-0.1371
+16,Somerset House,historic site,royal residence,London,UK,Mon-Sun: 10:00-18:00,51.5106,-0.1175
+17,Syon House,historic site,royal residence,London,UK,Mon-Sun: 10:30-17:00,51.474,-0.3135
+18,Kew Palace,historic site,royal residence,London,UK,Mon-Sun: 10:00-18:00,51.4839,-0.2956
+19,Osterley Park House,historic site,royal residence,London,UK,Mon-Sun: 10:00-17:00,51.4957,-0.3506
+20,Bushy House,historic site,royal residence,London,UK,Mon-Fri: 9:00-17:00,51.4156,-0.3389
+21,Machu Picchu,historic site,archaeological site,Cusco,Peru,Mon-Sun: 6:00-17:30,-13.1631,-72.545
+22,Pyramids of Giza,historic site,archaeological site,Giza,Egypt,Mon-Sun: 7:00-17:00,29.9792,31.1342
+23,Great Barrier Reef,natural wonder,marine reserve,Queensland,Australia,Mon-Sun: 8:00-17:00,-18.2871,147.6992
+24,Colosseum,historic site,archaeological site,Rome,Italy,Mon-Sun: 8:30-16:30,41.8902,12.4922
+25,Mount Kilimanjaro,natural wonder,mountain range,Kilimanjaro Region,Tanzania,Mon-Sun: 24 hours,-3.0674,37.3556
+26,Taj Mahal,historic site,monument,Agra,India,Mon-Sun: 6:00-19:00,27.1751,78.0421
+27,Great Wall of China,historic site,archaeological site,Beijing,China,Mon-Sun: 7:30-17:30,40.4319,116.5704
+28,Serengeti National Park,natural wonder,national park,Serengeti,Tanzania,Mon-Sun: 6:00-18:00,-2.3333,34.8333
+29,Louvre Museum,museum,art gallery,Paris,France,"Mon-Sun: 9:00-18:00, Wed & Fri: 9:00-21:45",48.8606,2.3376
+30,Northern Lights,natural phenomenon,astronomical phenomenon,Reykjavik,Iceland,Mon-Sun: 24 hours (seasonal),64.1466,-21.9426
+31,Blue Hole,natural wonder,marine reserve,Belize City,Belize,Mon-Sun: 6:00-18:00,17.3156,-87.5344
+32,Petra,historic site,archaeological site,Wadi Musa,Jordan,Mon-Sun: 6:00-18:00,30.3285,35.4444
+33,Eiffel Tower,landmark,monument,Paris,France,Mon-Sun: 9:30-23:45,48.8584,2.2945
+34,Cappadocia,natural wonder,geological formation,Göreme,Turkey,Mon-Sun: 24 hours,38.6431,34.8273
+35,Napa Valley,cultural site,wine region,Napa,USA,Mon-Sun: 10:00-17:00,38.5025,-122.2654
+36,Statue of Liberty,landmark,monument,New York,USA,Mon-Sun: 8:30-16:00,40.6892,-74.0445
+37,Everest Base Camp,natural wonder,mountain range,Solukhumbu,Nepal,Mon-Sun: 24 hours (seasonal),28.0015,86.8523
+38,Vatican Museums,museum,art gallery,Vatican City,Vatican City,Mon-Sat: 9:00-18:00,41.9065,12.4534
+39,Galápagos Islands,natural wonder,national park,Galápagos Islands,Ecuador,Mon-Sun: 24 hours,-0.9538,-90.9656
+40,Angkor Wat,historic site,archaeological site,Siem Reap,Cambodia,Mon-Sun: 5:00-17:30,13.4125,103.867
+41,Grand Canyon,natural wonder,national park,Arizona,USA,Mon-Sun: 24 hours,36.1069,-112.1129
+42,Sydney Opera House,landmark,architectural landmark,Sydney,Australia,Mon-Sun: 9:00-17:00,-33.8568,151.2153
+43,Kawarau Bridge (Queenstown),adventure activity site,bungee jumping site,Queenstown,New Zealand,Mon-Sun: 9:00-17:00,-45.0312,169.171
+44,Midnight Sun,natural phenomenon,astronomical phenomenon,Tromsø,Norway,Mon-Sun: 24 hours (seasonal),69.6492,18.956
+45,Alhambra,historic site,palace,Granada,Spain,Mon-Sun: 8:30-20:00,37.176,-3.5881
+46,Acropolis,historic site,archaeological site,Athens,Greece,Mon-Sun: 8:00-20:00,37.9715,23.7267
+47,Red Sea,natural wonder,marine reserve,Sharm El-Sheikh,Egypt,Mon-Sun: 6:00-18:00,27.9158,34.3299
+48,Ha Long Bay,natural wonder,marine reserve,Ha Long,Vietnam,Mon-Sun: 7:00-17:00,20.9101,107.1839
+49,Forbidden City,historic site,imperial palace,Beijing,China,Mon-Sun: 8:30-17:00,39.9163,116.3972
+50,Amazon Rainforest,natural wonder,rainforest,Amazonas,Brazil,Mon-Sun: 24 hours,-3.4653,-62.2159
+51,Interlaken,adventure activity site,outdoor adventure,Interlaken,Switzerland,Mon-Sun: 24 hours,46.6863,7.8632
+52,Chichen Itza,historic site,archaeological site,Yucatan,Mexico,Mon-Sun: 8:00-17:00,20.6843,-88.5678
+53,Greek Islands,natural wonder,island group,Various Locations,Greece,Mon-Sun: 24 hours,37.9838,23.7275
+54,Luxor,historic site,archaeological site,Luxor,Egypt,Mon-Sun: 6:00-18:00,25.6872,32.6396
+55,Venice Canals,cultural site,waterway,Venice,Italy,Mon-Sun: 24 hours,45.4408,12.3155
+56,Rainforests of Costa Rica,natural wonder,rainforest,San Jose,Costa Rica,Mon-Sun: 6:00-18:00,9.7489,-83.7534
+57,Palace of Versailles,historic site,royal residence,Versailles,France,Tue-Sun: 9:00-18:30,48.8049,2.1204
+58,Swiss Alps,natural wonder,mountain range,Various Locations,Switzerland,Mon-Sun: 24 hours,46.8182,8.2275
+59,Blue Mosque,cultural site,mosque,Istanbul,Turkey,Mon-Sun: 8:30-17:00,41.0055,28.9768
+60,Alaska,natural wonder,wilderness,Various Locations,USA,Mon-Sun: 24 hours (seasonal),64.2008,-149.4937
+61,Kremlin,historic site,fortress,Moscow,Russia,Mon-Sun: 9:00-18:00,55.7517,37.6173
+62,Giant’s Causeway,natural wonder,geological formation,Bushmills,Northern Ireland,Mon-Sun: 9:00-17:00,55.2408,-6.5116
+63,Rijksmuseum,museum,art gallery,Amsterdam,Netherlands,Mon-Sun: 9:00-17:00,52.3599,4.8852
+64,Hollywood Sign,landmark,iconic sign,Los Angeles,USA,Mon-Sun: 5:00-18:00,34.1341,-118.3215
+65,Stonehenge,historic site,prehistoric monument,Wiltshire,UK,Mon-Sun: 9:00-17:00,51.1789,-1.8262
+66,Iguazu Falls,natural wonder,waterfall,Misiones,Argentina,Mon-Sun: 8:00-18:00,-25.6953,-54.4367
+67,Sagrada Familia,cultural site,church,Barcelona,Spain,Mon-Sun: 9:00-20:00,41.4036,2.1744
+68,Neuschwanstein Castle,historic site,castle,Bavaria,Germany,Mon-Sun: 9:00-18:00,47.5576,10.7498
+69,Amalfi Coast,natural wonder,coastal region,Amalfi,Italy,Mon-Sun: 24 hours,40.6333,14.6023

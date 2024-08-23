@@ -1,0 +1,83 @@
+/* src/styles/CardItem.css */
+
+:root {
+    /* Light Theme Colors */
+    --bucketlist-bg-color-light: #f5f5f5;
+    --bucketlist-text-color-light: #333;
+    --visited-bg-color-light: #e0f7fa; /* Lighter and softer teal */
+    --visited-text-color-light: #00695c; /* Darker teal for text */
+  
+    /* Dark Theme Colors */
+    --bucketlist-bg-color-dark: #424242;
+    --bucketlist-text-color-dark: #f5f5f5;
+    --visited-bg-color-dark: #004d40; /* Darker teal for background */
+    --visited-text-color-dark: #b2dfdb; /* Lighter teal for text */
+  
+    /* Common styles */
+    --card-border-radius: 10px;
+    --card-padding: 16px;
+    --card-margin-bottom: 16px;
+    --card-image-width: 180px;
+    --card-image-height: 180px;
+    --card-icon-size: 24px;
+  }
+  
+  .bucketlist-card {
+    display: flex;
+    flex-direction: row;
+    border-radius: var(--card-border-radius);
+    margin-bottom: var(--card-margin-bottom);
+    background-color: var(--bucketlist-bg-color-light);
+    color: var(--bucketlist-text-color-light);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .visited-list-item {
+    display: flex;
+    flex-direction: row;
+    border-radius: var(--card-border-radius);
+    margin-bottom: var(--card-margin-bottom);
+    background-color: var(--visited-bg-color-light);
+    color: var(--visited-text-color-light);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    padding: var(--card-padding);
+  }
+  
+  .card-image {
+    width: var(--card-image-width);
+    height: var(--card-image-height);
+    border-radius: var(--card-border-radius);
+    object-fit: cover;
+    margin-right: var(--card-padding);
+  }
+  
+  .card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--card-padding);
+  }
+  
+  .card-actions button {
+    width: var(--card-icon-size);
+    height: var(--card-icon-size);
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    .bucketlist-card {
+      background-color: var(--bucketlist-bg-color-dark);
+      color: var(--bucketlist-text-color-dark);
+    }
+  
+    .visited-list-item {
+      background-color: var(--visited-bg-color-dark);
+      color: var(--visited-text-color-dark);
+    }
+  }
+  

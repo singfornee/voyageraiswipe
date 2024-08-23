@@ -1,0 +1,166 @@
+﻿tag_id,tag_type,tag_value,description
+1,Difficulty Level,Beginner-Friendly,Suitable for beginners or those with little experience.
+2,Difficulty Level,Intermediate,Requires some level of skill or experience.
+3,Difficulty Level,Advanced,Challenging and suitable for experienced participants.
+4,Difficulty Level,Family-Friendly,Easy and safe for families with children.
+5,Cost/Budget,Free,Activities that are free of charge.
+6,Cost/Budget,Budget-Friendly,Low-cost and accessible to most people.
+7,Cost/Budget,Mid-Range,Moderately priced activities.
+8,Cost/Budget,Luxury,High-end activities with a higher price tag.
+9,Target Audience,Solo Travelers,Particularly suited to those traveling alone.
+10,Target Audience,Couples,Romantic or intimate activities ideal for couples.
+11,Target Audience,Groups,Best enjoyed in a group setting.
+12,Target Audience,Elderly-Friendly,Easy and safe for older adults.
+13,Target Audience,Pet-Friendly,Activities where pets are allowed or welcome.
+14,Experience Type,Adrenaline-Pumping,Provides a thrill or rush.
+15,Experience Type,Relaxing,Focused on rest and relaxation.
+16,Experience Type,Educational,Offers learning experiences.
+17,Experience Type,Interactive,Involves active participation or engagement.
+18,Experience Type,Scenic,Focused on enjoying beautiful views or landscapes.
+19,Accessibility,Wheelchair Accessible,Accessible to those in wheelchairs.
+20,Accessibility,Kid-Friendly,Suitable for young children.
+21,Accessibility,Senior-Friendly,Easy on mobility and not too physically demanding.
+22,Accessibility,Language Barrier,Easy to enjoy without knowledge of the local language.
+23,Cultural/Relevance,Local Experience,Provides an authentic local experience.
+24,Cultural/Relevance,Tourist Attraction,Popular activities or destinations often visited by tourists.
+25,Cultural/Relevance,Traditional,Involves local traditions or cultural practices.
+26,Cultural/Relevance,Contemporary,Reflects modern or current trends.
+27,Environmental Impact,Eco-Friendly,Environmentally sustainable or with a minimal ecological footprint.
+28,Environmental Impact,Conservation-Focused,Involves or supports conservation efforts.
+29,Environmental Impact,Carbon-Neutral,Offsets carbon emissions.
+30,Duration,Short (1-2 hours),Quick activities that take only a couple of hours.
+31,Duration,Half-Day (3-5 hours),Can be completed in half a day.
+32,Duration,Full-Day (6-8 hours),Takes most of the day.
+33,Duration,Multi-Day,Spans several days.
+34,Weather/Climate,Indoor,"Can be enjoyed indoors, regardless of the weather."
+35,Weather/Climate,Outdoor,Best enjoyed outdoors.
+36,Weather/Climate,All-Weather,Can be enjoyed in any weather condition.
+37,Weather/Climate,Hot Climate,Suited to warm or tropical climates.
+38,Weather/Climate,Cold Climate,Ideal for cold or snowy environments.
+39,Safety,High Safety,Low risk and high safety standards.
+40,Safety,Moderate Risk,"Some inherent risk, requiring caution."
+41,Safety,Adventure Risk,"Significant risk, typically associated with adventure sports."
+42,Experience Category,Bucket List,Must-do activities that are iconic or particularly memorable.
+43,Experience Category,Unique Experience,Offers something rare or unusual.
+44,Experience Category,Hidden Gems,Less-known activities that provide a special or unique experience.
+45,Interaction Level,Observer,Where you watch or observe rather than participate.
+46,Interaction Level,Hands-On,Requires active participation.
+47,Interaction Level,Guided,Led by a guide or instructor.
+48,Interaction Level,Self-Guided,Can be done on your own without a guide.
+49,Physical Exertion,Low Exertion,Requires minimal physical effort.
+50,Physical Exertion,Moderate Exertion,Involves some physical activity but is not overly strenuous.
+51,Physical Exertion,High Exertion,Physically demanding activities that require a good level of fitness.
+52,Seasonal/Timing,Best Time to Visit,"Ideal seasons or months for the activity (e.g., Spring, Summer, Autumn, Winter)."
+53,Seasonal/Timing,Seasonal Events,"Specific to a season or holiday (e.g., Christmas Markets, Autumn Foliage)."
+54,Seasonal/Timing,Time of Day,"Best enjoyed during a particular time of day (e.g., Sunrise, Sunset, Nighttime)."
+55,Geographical Focus,North America,Focused on countries and regions in North America.
+56,Geographical Focus,South America,Focused on countries and regions in South America.
+57,Geographical Focus,Europe,Focused on European countries.
+58,Geographical Focus,Asia,Focused on Asian countries.
+59,Geographical Focus,Africa,Focused on African countries.
+60,Geographical Focus,Australia & Oceania,"Focused on Australia, New Zealand, and the Pacific Islands."
+61,Geographical Focus,Middle East,Focused on Middle Eastern countries.
+62,Geographical Focus,Arctic & Antarctic,"Focused on polar regions, including expeditions to the Arctic and Antarctic."
+63,Geographical Focus,Urban Centers,Focused on major cities and metropolitan areas around the world.
+64,Geographical Focus,Remote Locations,"In remote, less accessible areas, often requiring special transportation or planning."
+65,Geographical Focus,Coastal Regions,"Focused on coastal areas, including beaches, seaside towns, and marine environments."
+66,Geographical Focus,Mountain Regions,"Focused on mountainous areas, including popular mountain ranges and high-altitude regions."
+67,Geographical Focus,Islands,"Focused on islands, ranging from tropical to remote archipelagos."
+68,Geographical Focus,National Parks,Focused on activities in or near national parks.
+69,Geographical Focus,UNESCO World Heritage Sites,Focused on locations designated as World Heritage Sites due to their significance.
+70,Geographical Focus,Accessible by Public Transport,"Easy to reach by public transportation, such as buses, trains, or ferries."
+71,Geographical Focus,Off the Beaten Path,"In less-traveled or lesser-known areas, providing unique or undiscovered experiences."
+72,Geographical Focus,Popular Tourist Destinations,"In well-known, frequently visited areas that attract large numbers of tourists."
+73,Geographical Focus,Road Trip Friendly,"Ideal for exploring by car, often featuring scenic drives or highway routes."
+74,Geographical Focus,Close to Major Airports,"Located near major airports, making them easy to reach for travelers."
+75,Age Group,Young Adults,"Targeted at young adults (e.g., 18-35 years old)."
+76,Age Group,Middle-Aged,"Suitable for middle-aged individuals (e.g., 36-55 years old)."
+77,Age Group,Senior Citizens,"Designed for senior citizens (e.g., 55+ years old)."
+78,Group Size,Small Groups,"Best suited for small groups (e.g., 2-4 people)."
+79,Group Size,Large Groups,"Accommodates large groups (e.g., 10+ people)."
+80,Group Size,Solo,Particularly suited for solo participants.
+81,Activity Intensity,Low Intensity,Requires minimal effort and is very relaxed.
+82,Activity Intensity,Moderate Intensity,Requires a moderate level of effort.
+83,Activity Intensity,High Intensity,Physically demanding activities.
+84,Interest Type,Art & Craft,Focused on creating or exploring art and craft.
+85,Interest Type,Music & Performance,"Related to music, theater, and live performances."
+86,Interest Type,Photography,Ideal for photography enthusiasts.
+87,Interest Type,Technology,"Related to technology, gadgets, and digital experiences."
+88,Duration Flexibility,Fixed Duration,Has a set time frame.
+89,Duration Flexibility,Flexible Duration,Can be adjusted in length based on participant preference.
+90,Preparation Required,No Preparation,Requires little to no preparation.
+91,Preparation Required,Some Preparation,Requires some advance preparation or planning.
+92,Preparation Required,Extensive Preparation,Requires significant planning or preparation.
+93,Accessibility Level,Easy Access,Easy to access with minimal effort.
+94,Accessibility Level,Moderate Access,Requires some effort to reach.
+95,Accessibility Level,Challenging Access,Hard to access and requires effort.
+96,Culinary Focus,Local Cuisine,Focused on exploring local culinary traditions.
+97,Culinary Focus,Gourmet Experiences,Involving high-end or gourmet dining.
+98,Culinary Focus,Street Food,Focused on discovering local street food.
+99,Culinary Focus,Cooking Classes,Involving learning to cook specific cuisines.
+100,Cultural Sensitivity,High Cultural Sensitivity,Requires participants to be mindful of cultural norms and practices.
+101,Cultural Sensitivity,Low Cultural Sensitivity,Cultural norms are less of a concern.
+102,Seasonality,Year-Round,Can be enjoyed throughout the year.
+103,Seasonality,Seasonal,Only available during specific seasons.
+104,Accommodation Type,Luxury Hotels,Activities associated with high-end hotel stays.
+105,Accommodation Type,Boutique Hotels,"Activities involving unique, small-scale hotel experiences."
+106,Accommodation Type,Hostels,Budget-friendly activities often enjoyed by hostel guests.
+107,Accommodation Type,Camping,Activities related to camping experiences.
+108,Accommodation Type,Glamping,Luxurious camping experiences.
+109,Accommodation Type,Homestays,Activities involving staying with locals in their homes.
+110,Event Type,Music Festivals,Related to large-scale music events.
+111,Event Type,Cultural Festivals,"Events celebrating local culture, traditions, or history."
+112,Event Type,Food Festivals,"Events focused on food and drink, often featuring local or gourmet cuisines."
+113,Event Type,Film Festivals,"Events showcasing films, often international or indie productions."
+114,Event Type,Art Exhibitions,Events showcasing art collections or new works.
+115,Event Type,Sporting Events,Activities related to attending or participating in sports.
+116,Event Type,Theater Performances,Involving attending live theater shows or performances.
+117,Learning Style,Workshops,"Hands-on learning experiences, often short-term."
+118,Learning Style,Seminars,"Educational sessions, often more lecture-based."
+119,Learning Style,Guided Tours,Learning through guided exploration.
+120,Learning Style,Self-Paced Learning,"Activities that can be done at one's own pace, often with minimal guidance."
+121,Learning Style,Cultural Immersion,Deep learning through living or engaging directly with a culture.
+122,Wellness Focus,Meditation,Activities centered on meditation and mindfulness.
+123,Wellness Focus,Yoga Retreats,"Activities focused on yoga, often in serene settings."
+124,Wellness Focus,Spa and Relaxation,"Involving spa treatments, massages, and other relaxing activities."
+125,Wellness Focus,Detox Retreats,"Focused on physical detoxification through diet, exercise, and wellness practices."
+126,Social Interaction,Networking,Activities where participants can meet and connect with others.
+127,Social Interaction,Team Building,Designed to improve teamwork and cooperation among participants.
+128,Social Interaction,Solo Time,Activities designed for self-reflection or solo enjoyment.
+129,Social Interaction,Community Engagement,"Involves interacting with local communities, often through volunteering or social projects."
+130,Accommodation Focus,Heritage Properties,Activities involving stays in historic or heritage-listed properties.
+131,Accommodation Focus,Eco-Lodges,"Sustainable accommodations, often in natural settings."
+132,Accommodation Focus,Beach Resorts,Luxury or relaxing stays focused on beach activities.
+133,Accommodation Focus,Mountain Lodges,"Accommodations focused on mountain activities, such as skiing or hiking."
+134,Event Accessibility,VIP Access,Exclusive access or backstage experiences.
+135,Event Accessibility,General Admission,Standard entry to events or activities.
+136,Event Accessibility,Priority Entry,"Activities offering faster or easier access, often for a premium."
+137,Event Accessibility,Accessible Viewing Areas,For those needing special accommodation due to physical limitations.
+138,Adventure Specific,Night Adventures,"Activities specifically designed for nighttime, such as night safaris or stargazing."
+139,Adventure Specific,Underwater,"Activities that take place underwater, such as diving or snorkeling."
+140,Adventure Specific,Desert Activities,"Adventures focused on desert landscapes, such as dune bashing or camel trekking."
+141,Adventure Specific,Forest Adventures,"Involving forest environments, such as canopy walks or jungle trekking."
+142,Entertainment & Arts,Live Music,Activities related to attending live music performances.
+143,Entertainment & Arts,Street Performances,Enjoying performances in public spaces.
+144,Entertainment & Arts,Museum Tours,Guided or self-guided tours of museums.
+145,Interest Type,Fashion,"Activities related to fashion, such as fashion shows, boutique shopping, or fashion tours."
+146,Interest Type,Music,"Activities involving music, including concerts, music festivals, or music history tours."
+147,Interest Type,Film & Cinema,"Activities related to films, such as movie screenings, film festivals, or tours of famous film locations."
+148,Interest Type,Photography,"Ideal for photography enthusiasts, including photo tours, workshops, and scenic locations."
+149,Interest Type,Art & Design,"Activities related to visual arts, design exhibitions, or creative workshops."
+150,Interest Type,Literature,"Activities focused on literature, such as book tours, literary festivals, or visits to famous libraries."
+151,Interest Type,Theater & Performing Arts,"Activities that involve attending theater performances, opera, or dance shows."
+152,Interest Type,Architecture,Activities related to exploring architectural landmarks or taking architectural tours.
+153,Interest Type,Culinary,"Focused on food and drink, such as cooking classes, food tours, or wine tasting."
+154,Interest Type,History,"Activities centered around exploring historical sites, museums, or learning about past events."
+155,Interest Type,Science & Innovation,"Activities that involve scientific discovery, technology museums, or innovation centers."
+156,Interest Type,Craft & DIY,"Activities that involve crafting, DIY projects, or artisan workshops."
+157,Interest Type,Cultural Heritage,Activities that involve learning about and experiencing different cultural traditions and practices.
+158,Interest Type,Wellness & Fitness,"Activities focused on physical and mental well-being, such as yoga classes, fitness retreats, or wellness workshops."
+159,Interest Type,Nature & Wildlife,Activities that involve exploring natural environments or observing wildlife.
+160,Interest Type,Adventure Sports,"Activities involving extreme sports, outdoor adventures, or adrenaline-pumping experiences."
+161,Interest Type,Shopping,"Activities focused on shopping experiences, such as visiting markets, malls, or unique shops."
+162,Interest Type,Festivals & Events,Activities centered around attending or participating in local or international festivals and events.
+163,Interest Type,Sustainability,"Activities focused on eco-friendly practices, sustainable tourism, or conservation efforts."
+164,Interest Type,Technology & Gadgets,"Activities related to the latest tech innovations, gadgets, or digital experiences."
+165,Interest Type,Spirituality & Mindfulness,"Activities that involve spiritual practices, meditation, or mindfulness retreats."

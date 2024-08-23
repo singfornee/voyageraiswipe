@@ -1,0 +1,31 @@
+/* slick-carousel default styles */
+@import '~slick-carousel/slick/slick.css';
+@import '~slick-carousel/slick/slick-theme.css';
+
+
+
+.outer-container {
+  display: flex;
+  justify-content: center; /* Center the entire layout horizontally */
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 16px;
+  background-color: var(--background-default);
+}
+
+.app-inner-container {
+  display: flex;
+  width: 100%;
+  max-width: 1200px; /* Adjust based on your desired width */
+  margin: 0 auto; /* Center the container horizontally */
+  background-color: var(--background-paper);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.main-content-container {
+  flex-grow: 1;
+  padding: 16px;
+  background-color: var(--background-paper);
+  border-radius: 8px;
+}
