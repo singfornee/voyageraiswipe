@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardMedia, Typography, IconButton, Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, useTheme } from '@mui/material';
+import { Card, CardContent, Typography, IconButton, Box, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, useTheme } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Activity } from '../types/activity';
@@ -8,11 +8,11 @@ interface BucketListCardProps {
   activity: Activity;
   onMarkAsVisited: (activityId: string) => void;
   onDelete: (activityId: string) => void;
-  isVisitedCard?: boolean; // Add this prop to differentiate between visited and bucket list
+  isVisitedCard?: boolean; 
 }
 
 const BucketListCard: React.FC<BucketListCardProps> = ({ activity, onMarkAsVisited, onDelete, isVisitedCard }) => {
-  const theme = useTheme(); // Access the theme
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -37,16 +37,30 @@ const BucketListCard: React.FC<BucketListCardProps> = ({ activity, onMarkAsVisit
           marginBottom: 2,
           borderRadius: 3,
           boxShadow: 3,
-          backgroundColor: isVisitedCard ? theme.palette.secondary.main : theme.palette.background.paper, // Differentiate by color
-          color: isVisitedCard ? theme.palette.secondary.contrastText : theme.palette.text.primary, // Adjust text color accordingly
+          backgroundColor: isVisitedCard ? theme.palette.secondary.main : theme.palette.background.paper,
+          color: isVisitedCard ? theme.palette.secondary.contrastText : theme.palette.text.primary,
         }}
       >
-        <CardMedia
-          component="img"
-          sx={{ width: 180, height: 180, borderRadius: 2, margin: 1 }}
-          image={activity.imageUrl || 'https://via.placeholder.com/180'}
-          alt={activity.activity_full_name}
-        />
+        <Box
+          sx={{
+            width: 180,
+            height: 180,
+            overflow: 'hidden',
+            margin: 1,
+            borderRadius: 2,
+            flexShrink: 0,
+          }}
+        >
+          <img
+            src={activity.imageUrl || 'https://via.placeholder.com/180'}
+            alt={activity.activity_full_name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+        </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
           <CardContent sx={{ flex: '1 0 auto' }}>
             <Typography component="div" variant="h5" sx={{ fontWeight: 'bold' }}>

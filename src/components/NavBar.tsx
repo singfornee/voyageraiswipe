@@ -15,7 +15,7 @@ import {
   MenuItem,
   BottomNavigation,
   BottomNavigationAction,
-} from '@mui/material'; // <- Importing BottomNavigation and BottomNavigationAction
+} from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import ExploreIcon from '@mui/icons-material/Explore';
 import ListAltIcon from '@mui/icons-material/ListAlt';
@@ -188,12 +188,11 @@ const NavBar: React.FC = () => {
           </MenuItem>
         </Menu>
       </Box>
-      {/* Update this Box to adjust spacing */}
-      <Box sx={{ flexGrow: 1, px: 2, mt: 0 }}> 
+      <Box sx={{ flexGrow: 1, px: 2, mt: 0 }}>
         {navItems}
       </Box>
     </Box>
-  );  
+  );
 
   return (
     <Box>
@@ -247,9 +246,9 @@ const NavBar: React.FC = () => {
           className="navbar"
           sx={{
             position: 'fixed',
-            top: '32px',
+            top: '16px',
             left: '16px',
-            bottom: '32px',
+            bottom: '16px',
             width: isMediumScreen ? '80px' : '240px',
             backgroundColor: theme.palette.background.default,
             boxShadow: theme.shadows[3],

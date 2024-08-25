@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { createUserWithEmailAndPassword, Auth } from 'firebase/auth';
-import { Container, TextField, Button, Typography, Box, Paper, Snackbar, Alert } from '@mui/material';
+import { Container, TextField, Button, Typography, Box, Paper, Snackbar, Alert, CssBaseline } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles'; // Import ThemeProvider
+import { darkTheme } from '../styles/theme'; // Import your dark theme
 
 const SignUp: React.FC = () => {
   const [email, setEmail] = useState<string>('');
@@ -30,116 +32,108 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <Container 
-      maxWidth="xs" 
-      sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        minHeight: '100vh' // Vertically center the content
-      }}
-    >
-      <Paper 
-        elevation={3} 
+    <ThemeProvider theme={darkTheme}> {/* Apply dark theme */}
+      <CssBaseline /> {/* Ensure baseline styles are applied */}
+      <Container 
+        maxWidth="xs" 
         sx={{ 
-          padding: 3, 
-          backgroundColor: 'background.paper', 
-          borderRadius: 4, 
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'center', 
+          minHeight: '100vh', // Vertically center the content
         }}
       >
-        <Box textAlign="center">
-          <Typography variant="h4" component="h1" gutterBottom color="primary">
-            Sign Up
-          </Typography>
-        </Box>
-        <form onSubmit={handleSignUp}>
-          <TextField
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            fullWidth
-            required
-            margin="normal"
-            variant="outlined"
-            InputProps={{
-              sx: {
-                color: 'text.primary',
-                backgroundColor: 'background.paper',
-                borderRadius: '50px', 
-              },
-            }}
-            InputLabelProps={{
-              sx: {
-                color: 'text.secondary',
-              },
-            }}
-          />
-          <TextField
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            fullWidth
-            required
-            margin="normal"
-            variant="outlined"
-            InputProps={{
-              sx: {
-                color: 'text.primary',
-                backgroundColor: 'background.paper',
-                borderRadius: '50px', 
-              },
-            }}
-            InputLabelProps={{
-              sx: {
-                color: 'text.secondary',
-              },
-            }}
-          />
-          {error && (
-            <Typography color="error" variant="body2" align="center">
-              {error}
+        <Paper 
+          elevation={6} 
+          sx={{ 
+            padding: 4, 
+            backgroundColor: 'background.paper', 
+            borderRadius: 6, 
+            boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)', // Soft shadow for a modern look
+          }}
+        >
+          <Box textAlign="center">
+            <Typography variant="h4" component="h1" gutterBottom color="primary" sx={{ fontWeight: 'bold' }}>
+              Create Account
             </Typography>
-          )}
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ 
-              marginTop: 2, 
-              borderRadius: '50px', 
-            }}
-          >
-            Sign Up
-          </Button>
-        </form>
-        <Box textAlign="center" mt={2}>
-          <Typography variant="body2">
-            Already have an account?{' '}
-            <Button 
-              variant="text" 
-              color="primary" 
-              onClick={() => navigate('/signin')}
-            >
-              Sign In
-            </Button>
-          </Typography>
-        </Box>
-      </Paper>
+          </Box>
+          <form onSubmit={handleSignUp}>
+          <TextField
+  label="Email Address"
+  type="email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  fullWidth
+  required
+  margin="normal"
+  variant="outlined"
+  InputProps={{
+    sx: {
+      color: 'text.primary',
+      backgroundColor: 'background.default',
+      borderRadius: '12px', // More rounded corners
+      padding: '10px', // Extra padding for input fields
+      '&:focus-within fieldset': {
+        borderColor: 'primary.main', // Customize focus border color
+      },
+    },
+  }}
+  InputLabelProps={{
+    sx: {
+      color: 'text.secondary',
+      fontSize: '1rem', // Slightly larger font size for the label
+    },
+  }}
+/>
 
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
-          You have successfully signed up!
-        </Alert>
-      </Snackbar>
-    </Container>
+<Button
+  type="submit"
+  variant="contained"
+  color="primary"
+  fullWidth
+  sx={{
+    marginTop: 2,
+    borderRadius: '12px',
+    padding: '12px 0',
+    fontSize: '1rem',
+    fontWeight: 'bold',
+    '&:focus': {
+      outline: 'none', // Remove default outline
+      boxShadow: '0 0 0 4px rgba(57, 255, 20, 0.5)', // Custom focus shadow
+    },
+  }}
+>
+  Sign Up
+</Button>
+
+          </form>
+          <Box textAlign="center" mt={2}>
+            <Typography variant="body2">
+              Already have an account?{' '}
+              <Button 
+                variant="text" 
+                color="primary" 
+                onClick={() => navigate('/signin')}
+                sx={{ textTransform: 'none', fontSize: '0.9rem' }}
+              >
+                Sign In
+              </Button>
+            </Typography>
+          </Box>
+        </Paper>
+
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+            You have successfully signed up!
+          </Alert>
+        </Snackbar>
+      </Container>
+    </ThemeProvider>
   );
 };
 

@@ -29,3 +29,9 @@
   background-color: var(--background-paper);
   border-radius: 8px;
 }
+
+.css-1az2o5g {
+  background-color: transparent !important; /* Force the background color to be transparent */
+  padding: 16px;
+  border-radius: 8px;
+}

@@ -22,6 +22,8 @@ const importData = (filePath, collectionName, idField, isCompositeId = false) =>
     return;
   }
 
+  const errors = [];
+
   fs.createReadStream(filePath)
     .pipe(csv())
     .on('data', async (row) => {
@@ -31,7 +33,7 @@ const importData = (filePath, collectionName, idField, isCompositeId = false) =>
       const cleanedRow = {};
       Object.keys(row).forEach((key) => {
         const cleanedKey = key.replace(/^\W+|\W+$/g, '').trim(); // Remove non-word characters and trim
-        cleanedRow[cleanedKey.toLowerCase()] = row[key]; // Convert all keys to lowercase
+        cleanedRow[cleanedKey] = row[key]; // Keep original key casing as per CSV
       });
 
       console.log('Cleaned data to be added:', cleanedRow);
@@ -53,64 +55,156 @@ const importData = (filePath, collectionName, idField, isCompositeId = false) =>
         // Field validation based on the collection name
         let isValid = true;
 
-        // Validate fields for activities collection
-        if (collectionName === 'activities') {
-          const { activity_id, attraction_id, activity_name, activity_full_name, activity_description, activities_keywords, min_duration, max_duration, price, currency } = cleanedRow;
-          if (!activity_id || !attraction_id || !activity_name || !activity_full_name || !activity_description || !min_duration || !max_duration || !price || !currency) {
-            console.error('Missing required fields for activities:', cleanedRow);
-            isValid = false;
-          }
-        }
-        // Validate fields for attractions collection
-        else if (collectionName === 'attractions') {
-          const { attraction_id, attraction_name, attraction_category, attraction_subcategory, location_city, location_country, opening_hour, latitude, longitude } = cleanedRow;
-          if (!attraction_id || !attraction_name || !attraction_category || !location_city || !location_country || !latitude || !longitude) {
-            console.error('Missing required fields for attractions:', cleanedRow);
-            isValid = false;
-          }
-        }
-        // Validate fields for categories collection
-        else if (collectionName === 'categories') {
-          const { category_id, core_category, description } = cleanedRow;
-          if (!category_id || !core_category || !description) {
-            console.error('Missing required fields for categories:', cleanedRow);
-            isValid = false;
-          }
-        }
-        // Validate fields for subcategories collection
-        else if (collectionName === 'subcategories') {
-          const { subcategory_id, subcategories, core_category_id, description } = cleanedRow;
-          if (!subcategory_id || !subcategories || !core_category_id || !description) {
-            console.error('Missing required fields for subcategories:', cleanedRow);
-            isValid = false;
-          }
-        }
-        else if (collectionName === 'tags') {
-          const { tag_type, tag_value, description } = cleanedRow;
-        if (!tag_type || !tag_value || !description) {
-          console.error('Missing required fields:', cleanedRow);
-          isValid = false;;
-          }
-        }
+        switch (collectionName) {
+          case 'activities':
+            const {
+              activity_id,
+              attraction_id,
+              activity_name,
+              activity_full_name,
+              activity_description,
+              activities_keywords,
+              min_duration,
+              max_duration,
+              price,
+              currency,
+            } = cleanedRow;
+            if (
+              !activity_id ||
+              !attraction_id ||
+              !activity_name ||
+              !activity_full_name ||
+              !activity_description ||
+              !min_duration ||
+              !max_duration ||
+              !price ||
+              !currency
+            ) {
+              console.error('Missing required fields for activities:', cleanedRow);
+              isValid = false;
+            }
+            break;
 
-        // Validate fields for userActivities collection
-        else if (collectionName === 'userActivities') {
-          const { activity_id, user_id, activity_full_name, activity_description, attraction_id, status, timestamp } = cleanedRow;
-          if (!activity_id || !user_id || !activity_full_name || !activity_description || !attraction_id || !status || !timestamp) {
-            console.error('Missing required fields for userActivities:', cleanedRow);
-            isValid = false;
-          }
-        }
+          case 'attractions':
+            const {
+              attraction_id: attr_id,
+              attraction_name,
+              attraction_category,
+              attraction_subcategory,
+              location_city,
+              location_country,
+              opening_hour,
+              latitude,
+              longitude,
+            } = cleanedRow;
+            if (
+              !attr_id ||
+              !attraction_name ||
+              !attraction_category ||
+              !location_city ||
+              !location_country ||
+              !latitude ||
+              !longitude
+            ) {
+              console.error('Missing required fields for attractions:', cleanedRow);
+              isValid = false;
+            }
+            break;
 
-        // Validate fields for userPreferences collection
-        else if (collectionName === 'userPreferences') {
-          const { user_id, keywords } = cleanedRow;
-          if (!user_id || !keywords) {
-            console.error('Missing required fields for userPreferences:', cleanedRow);
-            isValid = false;
-          }
-        }
+          case 'categories':
+            const { category_id, core_category, description } = cleanedRow;
+            if (!category_id || !core_category || !description) {
+              console.error('Missing required fields for categories:', cleanedRow);
+              isValid = false;
+            }
+            break;
 
+          case 'subcategories':
+            const {
+              subcategory_id,
+              subcategories,
+              core_category_id,
+              sub_description,
+            } = cleanedRow;
+            if (!subcategory_id || !subcategories || !core_category_id || !sub_description) {
+              console.error('Missing required fields for subcategories:', cleanedRow);
+              isValid = false;
+            }
+            break;
+
+          case 'tags':
+            const { tag_type, tag_value, tag_description } = cleanedRow;
+            if (!tag_type || !tag_value || !tag_description) {
+              console.error('Missing required fields for tags:', cleanedRow);
+              isValid = false;
+            }
+            break;
+
+            case 'userActivities': {
+              const {
+                  activity_id: user_activity_id,
+                  user_id,
+                  activity_full_name: user_activity_full_name,
+                  activity_description: user_activity_description,
+                  attraction_id: user_attraction_id,
+                  status,
+                  timestamp,
+                  imageUrl, // Ensure this is included
+              } = cleanedRow;
+          
+              const requiredFields = {
+                  user_activity_id,
+                  user_id,
+                  user_activity_full_name,
+                  user_activity_description,
+                  user_attraction_id,
+                  status,
+                  timestamp
+              };
+          
+              const missingFields = Object.keys(requiredFields).filter(key => !requiredFields[key]);
+          
+              if (missingFields.length > 0) {
+                  console.error('Missing required fields for userActivities:', missingFields.join(', '), cleanedRow);
+                  isValid = false;
+                  break;
+              }
+          
+              const finalImageUrl = imageUrl || 'https://via.placeholder.com/180'; // Default placeholder
+          
+              await collectionRef.doc(`${user_id}_${user_activity_id}`).set({
+                  activity_id: user_activity_id,
+                  user_id,
+                  activity_full_name: user_activity_full_name,
+                  activity_description: user_activity_description,
+                  attraction_id: user_attraction_id,
+                  status,
+                  timestamp: admin.firestore.Timestamp.fromDate(new Date(timestamp)),
+                  imageUrl: finalImageUrl, // Make sure this is being set
+              });
+          
+              console.log(`Document added to userActivities with ID: ${user_id}_${user_activity_id}`);
+              break;
+          }          
+          
+          case 'userPreferences':
+            const {
+              user_id: pref_user_id,
+              displayName,
+              profileIcon,
+              preferences,
+              updatedAt,
+            } = cleanedRow;
+            if (!pref_user_id || !preferences || !updatedAt) {
+              console.error('Missing required fields for userPreferences:', cleanedRow);
+              isValid = false;
+            }
+            break;
+
+          default:
+            console.error('Unknown collection name:', collectionName);
+            isValid = false;
+        }
 
         if (!isValid) {
           return; // Skip this row if it's missing required fields
@@ -149,4 +243,3 @@ importData('../data/subcategories.csv', 'subcategories', 'subcategory_id');
 importData('../data/tags.csv', 'tags', 'tag_id'); // Importing tags collection
 importData('../data/userActivities.csv', 'userActivities', 'activity_id', true); // Use composite ID for userActivities
 importData('../data/userPreferences.csv', 'userPreferences', 'user_id');
-

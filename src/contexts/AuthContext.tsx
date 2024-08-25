@@ -1,17 +1,34 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, User, Auth } from 'firebase/auth';
-import { auth, db } from '../firebase';  // Ensure db is imported from your firebase config
-import { doc, getDoc } from 'firebase/firestore';  // Import Firestore functions
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  User,
+  Auth,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+
+export interface Profile {
+  displayName: string;
+  profileIcon: string;
+  preferences: string[];  // Ensure preferences are included
+}
 
 // Define the interface for your AuthContext
 interface AuthContextProps {
   currentUser: User | null;
-  profile: { displayName: string; profileIcon: string };  // Add profile data to the context
-  setProfile: (profile: { displayName: string; profileIcon: string }) => void;
+  profile: Profile;  // Use the Profile interface for the profile data
+  setProfile: (profile: Profile) => void;  // Ensure setProfile uses the Profile interface
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;  // Add resetPassword to the context
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   loading: boolean;
 }
 
@@ -30,10 +47,9 @@ export const useAuth = () => {
 // Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<{ displayName: string; profileIcon: string }>({ displayName: '', profileIcon: '' });
+  const [profile, setProfile] = useState<Profile>({ displayName: '', profileIcon: '', preferences: [] });
   const [loading, setLoading] = useState(true);
 
-  // Define the login function
   const login = async (email: string, password: string) => {
     await signInWithEmailAndPassword(auth as Auth, email, password);
   };
@@ -50,7 +66,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await signOut(auth as Auth);
   };
 
-  // Fetch user profile data from Firestore
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth as Auth, provider);
+      const user = result.user;
+
+      await fetchUserProfile(user);
+
+      setCurrentUser(user);
+    } catch (error) {
+      console.error("Google login failed:", error);
+    }
+  };
+
   const fetchUserProfile = async (user: User) => {
     const userDocRef = doc(db, 'userPreferences', user.uid);
     const userDoc = await getDoc(userDocRef);
@@ -59,6 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile({
         displayName: userData?.displayName || user.displayName || '',
         profileIcon: userData?.profileIcon || '',
+        preferences: userData?.preferences || [],
       });
     }
   };
@@ -71,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
         await fetchUserProfile(user);
       } else {
-        setProfile({ displayName: '', profileIcon: '' });
+        setProfile({ displayName: '', profileIcon: '', preferences: [] });
       }
     });
 
@@ -81,11 +111,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     currentUser,
     profile,
-    setProfile,  // Expose setProfile function to update profile state
+    setProfile,
     login,
     register,
-    resetPassword, // Add resetPassword to the context
+    resetPassword,
     logout,
+    loginWithGoogle,
     loading,
   };
 

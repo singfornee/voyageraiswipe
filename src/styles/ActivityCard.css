@@ -5,16 +5,19 @@
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  max-width: 350px; /* This should only apply to non-spotlight cards */
   margin: 16px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   background-color: var(--background-paper);
 }
 
+.activity-card:not(.spotlight-card) {
+  max-width: 450px; /* Limit width for non-spotlight cards */
+}
+
 .activity-card.spotlight-card {
-  max-width: 100%; /* Ensure it takes up the full width */
+  max-width: 100%;
   width: 100%;
-  margin: 0; /* Remove any margin that might affect centering */
+  margin: 0; /* Center the spotlight card */
 }
 
 .activity-card:hover {
@@ -24,23 +27,24 @@
 
 .image-container {
   width: 100%;
-  height: 200px;
+  height: 300px;
   overflow: hidden;
 }
 
 .activity-card.spotlight-card .image-container {
-  height: 60vh; /* Adjust this to your desired height for the spotlight */
+  height: 60vh; /* Increase height for spotlight card image */
 }
 
 .explore-activity-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center; /* Ensure the image is centered */
   transition: transform 0.3s ease;
 }
 
 .activity-card:hover .explore-activity-image {
-  transform: scale(1.05);
+  transform: scale(1.02); /* Reduce the zoom effect to prevent excessive cropping */
 }
 
 .no-image {
@@ -54,7 +58,7 @@
 }
 
 .activity-card.spotlight-card .no-image {
-  height: 60vh; /* Adjust to match the image container's height */
+  height: 60vh; /* Match the no-image container height with spotlight image */
 }
 
 .activity-info {
@@ -89,19 +93,15 @@
   background-color: var(--background-paper);
 }
 
-.pass-button,
-.bucket-list-button,
-.visited-button {
-  transition: background-color 0.3s ease;
+.buttons-container button {
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.pass-button:hover,
-.bucket-list-button:hover,
-.visited-button:hover {
+.buttons-container button:hover {
   background-color: rgba(0, 0, 0, 0.05);
   border-radius: 50%;
 }
 
-.activity-card button:active {
+.buttons-container button:active {
   transform: scale(0.95);
 }

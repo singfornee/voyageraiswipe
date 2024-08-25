@@ -1,14 +1,20 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Container, Typography, Box, CircularProgress, Grid, Button, Card, CardContent, CircularProgress as CircularProgressIndicator } from '@mui/material';
+import { Container, Typography, Box, Grid, Card, CardContent, CircularProgress as CircularProgressIndicator, Tooltip } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useBucketList } from '../contexts/BucketListContext';
 import { useVisitedList } from '../contexts/VisitedListContext';
-import { fetchActivitiesFromFirestore } from '../firestore';
+import { fetchActivitiesFromFirestore, fetchUserPreferences } from '../firestore'; // Ensure this method is implemented
 import ActivityCard from './ActivityCard';
 import { Activity } from '../types/activity';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ExploreIcon from '@mui/icons-material/Explore';
+import { Button } from '@mui/material';
+
+
 
 const Dashboard: React.FC = () => {
   const { currentUser } = useAuth();
@@ -90,12 +96,22 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       try {
         const storedTopPicks = loadTopPicksFromLocalStorage();
-
+  
         if (storedTopPicks) {
           setRecommendedActivities(storedTopPicks);
         } else {
           const allActivities = await fetchActivitiesFromFirestore();
-          const recommended = allActivities.slice(0, 3);
+          const userPreferences: string[] = await fetchUserPreferences(currentUser?.uid ?? '');  // Explicitly typed
+  
+          // Filter activities based on user preferences
+          const filteredActivities = allActivities.filter(activity =>
+            userPreferences.some(pref =>
+              activity.activities_keywords?.includes(pref)
+            )
+          );
+  
+          // If no activities match, fall back to all activities
+          const recommended = filteredActivities.length > 0 ? filteredActivities.slice(0, 3) : allActivities.slice(0, 3);
           setRecommendedActivities(recommended);
           saveTopPicksToLocalStorage(recommended);
         }
@@ -106,15 +122,17 @@ const Dashboard: React.FC = () => {
         setLoading(false);
       }
     };
-
+  
     fetchActivities();
   }, [currentUser, isInBucketList, isInVisitedList]);
+  
 
   return (
     <Container maxWidth="lg" sx={{ padding: '32px', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <ToastContainer />
 
-      <Box mb={4} textAlign="center">
+      {/* Hero Section */}
+      <Box mb={6} textAlign="center">
         <Typography variant="h4" gutterBottom>
           Welcome back, {currentUser?.displayName || 'Explorer'}!
         </Typography>
@@ -128,7 +146,7 @@ const Dashboard: React.FC = () => {
             position: 'relative',
             overflow: 'hidden',
             borderRadius: '12px',
-            boxShadow: 3,
+            boxShadow: 4,
           }}
         >
           <Box
@@ -161,22 +179,22 @@ const Dashboard: React.FC = () => {
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 2,
+              textAlign: 'center',
             }}
           >
             <Button
-              variant="outlined"
+              variant="contained"
+              color="primary"
+              startIcon={<ExploreIcon />}
               sx={{
-                color: 'white',
-                borderColor: 'white',
                 padding: '8px 24px',
                 fontSize: '1rem',
                 borderRadius: '20px',
                 textTransform: 'none',
                 '&:hover': {
-                  borderColor: 'white',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  backgroundColor: 'primary.dark',
+                  boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.5)',
                 },
-                boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.3)',
               }}
               onClick={() => navigate('/explore')}
             >
@@ -186,65 +204,100 @@ const Dashboard: React.FC = () => {
         </Box>
       </Box>
 
-      <Box mb={4} width="100%" textAlign="center">
+      {/* Stats Section */}
+      <Box mb={6} width="100%" textAlign="center">
         <Typography variant="h5" gutterBottom>
           Your Adventure Stats
         </Typography>
-        <Grid container spacing={4} justifyContent="center">
+        <Grid container spacing={2} justifyContent="center">
           <Grid item xs={12} sm={4}>
-            <Card sx={{ boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6">Bucket List</Typography>
-                <CircularProgressIndicator
-                  variant="determinate"
-                  value={(bucketList.length / 50) * 100}
-                  size={80}
-                  thickness={5}
-                  sx={{ color: 'primary.main', mt: 2 }}
-                />
-                <Typography variant="body2" sx={{ mt: 2 }}>
-                  {bucketList.length} / 50 Milestone
-                </Typography>
-              </CardContent>
+            <Card
+              sx={{
+                boxShadow: 4,
+                padding: 3,
+                textAlign: 'center',
+                background: 'linear-gradient(45deg, #6A5ACD 30%, #8A2BE2 90%)',
+                color: 'white',
+                height: '100%', // Ensure uniform height
+              }}
+            >
+              <Tooltip title="Keep exploring!" arrow>
+                <Box>
+                  <FavoriteIcon sx={{ fontSize: 50, mb: 2 }} />
+                  <CircularProgressIndicator
+                    variant="determinate"
+                    value={(bucketList.length / 50) * 100}
+                    size={90}
+                    thickness={6}
+                    sx={{ color: 'white' }}
+                  />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    {bucketList.length} / 50 Milestone
+                  </Typography>
+                </Box>
+              </Tooltip>
             </Card>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Card sx={{ boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6">Visited</Typography>
-                <CircularProgressIndicator
-                  variant="determinate"
-                  value={(visitedList.length / 100) * 100}
-                  size={80}
-                  thickness={5}
-                  sx={{ color: 'secondary.main', mt: 2 }}
-                />
-                <Typography variant="body2" sx={{ mt: 2 }}>
-                  {visitedList.length} / 100 Milestone
-                </Typography>
-              </CardContent>
+            <Card
+              sx={{
+                boxShadow: 4,
+                padding: 3,
+                textAlign: 'center',
+                background: 'linear-gradient(45deg, #2E335A 30%, #6A5ACD 90%)',
+                color: 'white',
+                height: '100%', // Ensure uniform height
+              }}
+            >
+              <Tooltip title="Amazing places you've been!" arrow>
+                <Box>
+                  <CheckCircleIcon sx={{ fontSize: 50, mb: 2 }} />
+                  <CircularProgressIndicator
+                    variant="determinate"
+                    value={(visitedList.length / 100) * 100}
+                    size={90}
+                    thickness={6}
+                    sx={{ color: 'white' }}
+                  />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    {visitedList.length} / 100 Milestone
+                  </Typography>
+                </Box>
+              </Tooltip>
             </Card>
           </Grid>
           <Grid item xs={12} sm={4}>
-            <Card sx={{ boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6">Total Activities</Typography>
-                <CircularProgressIndicator
-                  variant="determinate"
-                  value={((bucketList.length + visitedList.length) / 150) * 100}
-                  size={80}
-                  thickness={5}
-                  sx={{ color: 'error.main', mt: 2 }}
-                />
-                <Typography variant="body2" sx={{ mt: 2 }}>
-                  {bucketList.length + visitedList.length} / 150 Milestone
-                </Typography>
-              </CardContent>
+            <Card
+              sx={{
+                boxShadow: 4,
+                padding: 3,
+                textAlign: 'center',
+                background: 'linear-gradient(45deg, #FFD700 30%, #FFA500 90%)',
+                color: 'white',
+                height: '100%', // Ensure uniform height
+              }}
+            >
+              <Tooltip title="Total activities you've engaged with" arrow>
+                <Box>
+                  <ExploreIcon sx={{ fontSize: 50, mb: 2 }} />
+                  <CircularProgressIndicator
+                    variant="determinate"
+                    value={((bucketList.length + visitedList.length) / 150) * 100}
+                    size={90}
+                    thickness={6}
+                    sx={{ color: 'white' }}
+                  />
+                  <Typography variant="body2" sx={{ mt: 2 }}>
+                    {bucketList.length + visitedList.length} / 150 Milestone
+                  </Typography>
+                </Box>
+              </Tooltip>
             </Card>
           </Grid>
         </Grid>
       </Box>
 
+      {/* Top Picks Section */}
       {loading ? (
         <Grid container spacing={2} justifyContent="center">
           {[...Array(3)].map((_, index) => (

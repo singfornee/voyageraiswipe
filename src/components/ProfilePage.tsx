@@ -3,10 +3,9 @@ import { Container, Typography, Box, Grid, IconButton, Button, TextField, Toolti
 import { useAuth } from '../contexts/AuthContext';  // Ensure correct path and named import
 import { db } from '../firebase';  // Ensure this is correct
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { useTheme } from '@mui/material/styles';  // Correct use of the useTheme hook
+import { useTheme } from '@mui/material/styles';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
-// Ensure this is correctly exported from the file
 const preferencesList = [
   'Fashion', 'Music', 'Photography', 'Art & Design', 'Architecture',
   'Culinary', 'History', 'Science', 'Craft & DIY', 'Cultural Heritage',
@@ -25,12 +24,7 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     const fetchIcons = async () => {
-      const icons = [
-        '/profile-icons/icon1.png',
-        '/profile-icons/icon2.png',
-        '/profile-icons/icon3.png',
-        '/profile-icons/icon4.png',
-      ];
+      const icons = Array.from({ length: 10 }, (_, index) => `/profile-icons/icon${index + 1}.png`);
       setProfileIcons(icons);
     };
 
@@ -73,6 +67,7 @@ const ProfilePage: React.FC = () => {
       setProfile({
         displayName,
         profileIcon: selectedIcon || '',
+        preferences: selectedPreferences,
       });
 
       setSnackbarOpen(true); // Show success notification
@@ -133,16 +128,20 @@ const ProfilePage: React.FC = () => {
           {preferencesList.map((preference, index) => (
             <Grid item key={index}>
               <Button
-                variant={selectedPreferences.includes(preference) ? 'contained' : 'outlined'}
-                color="primary"
+                variant={selectedPreferences.includes(preference) ? 'contained' : 'ghost'}
+                color={selectedPreferences.includes(preference) ? 'primary' : 'secondary'}
                 onClick={() => handlePreferenceToggle(preference)}
                 sx={{
                   borderRadius: '30px',
                   textTransform: 'none',
-                  transition: 'background-color 0.3s',
+                  padding: '8px 16px',
+                  transition: 'background-color 0.3s, color 0.3s, border-color 0.3s',
+                  backgroundColor: selectedPreferences.includes(preference) ? theme.palette.primary.main : 'transparent',
+                  borderColor: selectedPreferences.includes(preference) ? 'transparent' : theme.palette.text.primary,
+                  color: selectedPreferences.includes(preference) ? theme.palette.primary.contrastText : theme.palette.text.primary,
                   '&:hover': {
-                    backgroundColor: theme.palette.primary.light,
-                    color: theme.palette.primary.contrastText,
+                    backgroundColor: selectedPreferences.includes(preference) ? theme.palette.primary.dark : 'rgba(255, 255, 255, 0.1)',
+                    color: selectedPreferences.includes(preference) ? theme.palette.primary.contrastText : theme.palette.primary.main,
                   },
                 }}
               >

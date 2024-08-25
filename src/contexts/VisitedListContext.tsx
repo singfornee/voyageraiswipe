@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
 import { Activity } from '../types/activity';
 import { useAuth } from './AuthContext';
-import { db } from '../firebase'; // Import Firebase Firestore
-import { collection, getDocs, addDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { db } from '../firebase';
+import { collection, getDocs, setDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 
 interface VisitedListContextProps {
   visitedList: Activity[];
@@ -22,21 +22,19 @@ export const useVisitedList = () => {
   return context;
 };
 
-export const VisitedListProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const VisitedListProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const [visitedList, setVisitedList] = useState<Activity[]>([]);
 
   const fetchVisitedList = async () => {
     if (!currentUser) return;
 
-    const visitedListRef = collection(db, 'userActivities');
-    const q = query(visitedListRef, where('userId', '==', currentUser.uid), where('status', '==', 'visited'));
-
     try {
+      const visitedListRef = collection(db, 'userActivities');
+      const q = query(visitedListRef, where('userId', '==', currentUser.uid), where('status', '==', 'visited'));
       const querySnapshot = await getDocs(q);
-      const activities: Activity[] = querySnapshot.docs.map(doc => {
-        return doc.data() as Activity;
-      });
+
+      const activities: Activity[] = querySnapshot.docs.map((doc) => doc.data() as Activity);
       setVisitedList(activities);
     } catch (error) {
       console.error('Error fetching visited list:', error);
@@ -47,15 +45,15 @@ export const VisitedListProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (!currentUser) return;
 
     try {
-      const visitedListRef = collection(db, 'userActivities');
-      await addDoc(visitedListRef, {
+      const activityDocRef = doc(db, 'userActivities', `${currentUser.uid}_${activity.activity_id}`);
+      await setDoc(activityDocRef, {
         ...activity,
         userId: currentUser.uid,
         status: 'visited',
         timestamp: new Date(),
       });
 
-      setVisitedList((prevList) => [...prevList, activity]);
+      setVisitedList((prevList) => [...prevList, { ...activity }]);
     } catch (error) {
       console.error('Error adding to visited list:', error);
     }
@@ -65,13 +63,8 @@ export const VisitedListProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (!currentUser) return;
 
     try {
-      const visitedListRef = collection(db, 'userActivities');
-      const q = query(visitedListRef, where('userId', '==', currentUser.uid), where('activityId', '==', activityId), where('status', '==', 'visited'));
-      const querySnapshot = await getDocs(q);
-      
-      querySnapshot.forEach(async (doc) => {
-        await deleteDoc(doc.ref);
-      });
+      const activityDocRef = doc(db, 'userActivities', `${currentUser.uid}_${activityId}`);
+      await deleteDoc(activityDocRef);
 
       setVisitedList((prevList) => prevList.filter((activity) => activity.activity_id !== activityId));
     } catch (error) {
@@ -85,8 +78,16 @@ export const VisitedListProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [currentUser]);
 
+  const value = useMemo(() => ({
+    visitedList,
+    setVisitedList,
+    addToVisitedList,
+    removeVisitedActivity,
+    fetchVisitedList,
+  }), [visitedList]);
+
   return (
-    <VisitedListContext.Provider value={{ visitedList, setVisitedList, addToVisitedList, removeVisitedActivity, fetchVisitedList }}>
+    <VisitedListContext.Provider value={value}>
       {children}
     </VisitedListContext.Provider>
   );

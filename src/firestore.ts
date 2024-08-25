@@ -6,10 +6,12 @@ import {
   addDoc, 
   query, 
   where,
-  updateDoc 
+  updateDoc,
+  setDoc
 } from 'firebase/firestore';
 import { db } from './firebase';  // Ensure this path is correct relative to your file structure
 import { Activity, Attraction } from './types/activity';  // Import the necessary types
+
 
 export const updateProfileIcon = async (userId: string, iconUrl: string) => {
   const userDocRef = doc(db, 'users', userId);
@@ -46,6 +48,40 @@ export const fetchAttractionById = async (attractionId: string): Promise<Attract
   }
   
   return null;
+};
+
+export const fetchUserPreferences = async (userId: string): Promise<string[]> => {
+  if (!userId) return [];
+
+  try {
+    const userDocRef = doc(db, 'userPreferences', userId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      return data?.preferences || [];
+    } else {
+      console.log('User preferences not found.');
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching user preferences:', error);
+    throw error;
+  }
+};
+
+// Add or update user preferences in Firestore
+export const addOrUpdateUserPreferences = async (userId: string, preferences: string[]) => {
+  if (!userId) return;
+
+  try {
+    const userDocRef = doc(db, 'userPreferences', userId);
+    await setDoc(userDocRef, { preferences }, { merge: true });
+    console.log('User preferences updated successfully');
+  } catch (error) {
+    console.error('Error updating user preferences:', error);
+    throw error;
+  }
 };
 
 // Add an activity to the user's bucket list

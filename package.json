@@ -21,6 +21,7 @@
   "devDependencies": {
     "@babel/plugin-transform-export-namespace-from": "^7.24.7",
     "@types/axios": "^0.14.0",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^22.4.0",
     "@types/react": "^18.2.13",
     "@types/react-dom": "^18.2.6",

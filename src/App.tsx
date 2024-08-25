@@ -4,6 +4,7 @@ import { useAuth } from './contexts/AuthContext';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import ForgotPassword from './components/ForgotPassword';
+import Onboarding from './components/Onboarding';
 import NavBar from './components/NavBar';
 import SearchBar from './components/SearchBar';
 import { BucketListProvider } from './contexts/BucketListContext';
@@ -15,6 +16,7 @@ import { lightTheme, darkTheme } from './styles/theme';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import './styles/App.css';
+import { ToastNotificationContainer } from './components/notifications'; // Import the new toast container
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const Explore = lazy(() => import('./components/Explore'));
@@ -26,8 +28,10 @@ const SearchResults = lazy(() => import('./components/SearchResults'));
 const App: React.FC = () => {
   const auth = useAuth();
   const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const isMediumOrLargerScreen = useMediaQuery(theme.breakpoints.up('md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const handleToggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -79,8 +83,9 @@ const App: React.FC = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    maxWidth: '1000px', // Fixed maxWidth for main content area
-                    margin: '0 auto',    // Center the content
+                    maxWidth: '1000px',
+                    margin: '0 auto',
+                    width: isMediumOrLargerScreen ? 'calc(100% - 240px)' : '100%',
                   }}
                 >
                   <Box
@@ -93,7 +98,6 @@ const App: React.FC = () => {
                       {isDarkMode ? <Brightness7Icon /> : <Brightness4Icon />}
                     </IconButton>
                   </Box>
-                  {/* Wrap SearchBar in a Box for consistent width */}
                   <Box sx={{ width: '100%', maxWidth: '600px', mb: 2 }}>
                     <SearchBar />
                   </Box>
@@ -133,11 +137,13 @@ const App: React.FC = () => {
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/forgotpassword" element={<ForgotPassword />} />
+              <Route path="/onboarding" element={<Onboarding />} />
               <Route path="*" element={<Navigate to="/signin" />} />
             </Routes>
           </Box>
         )}
       </Router>
+      <ToastNotificationContainer /> {/* Use the centralized ToastContainer */}
     </ThemeProvider>
   );
 };

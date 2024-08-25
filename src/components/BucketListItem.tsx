@@ -1,6 +1,4 @@
-// src/components/BucketListItem.tsx
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import useAttractionsCache from '../hooks/useAttractionsCache';  // Adjust the path as necessary
 import { Activity, Attraction } from '../types/activity';  // Adjust the import paths
 import { Card, CardContent, CardMedia, Typography, IconButton, Box, useTheme } from '@mui/material';
@@ -16,7 +14,7 @@ interface BucketListItemProps {
 const BucketListItem: React.FC<BucketListItemProps> = ({ activity, onMarkAsVisited, onDelete }) => {
   const [attraction, setAttraction] = useState<Attraction | null>(null);
   const getAttraction = useAttractionsCache();
-  const theme = useTheme();  // Use the theme
+  const theme = useTheme();
 
   useEffect(() => {
     const loadAttraction = async () => {
@@ -27,6 +25,14 @@ const BucketListItem: React.FC<BucketListItemProps> = ({ activity, onMarkAsVisit
     };
     loadAttraction();
   }, [activity.attraction_id, getAttraction]);
+
+  const handleMarkAsVisited = useCallback(() => {
+    onMarkAsVisited(activity.activity_id);
+  }, [activity.activity_id, onMarkAsVisited]);
+
+  const handleDelete = useCallback(() => {
+    onDelete(activity.activity_id);
+  }, [activity.activity_id, onDelete]);
 
   return (
     <Card sx={{ display: 'flex', flexDirection: 'row', marginBottom: 2, borderRadius: 3, boxShadow: 3, backgroundColor: theme.palette.background.paper }}>
@@ -50,13 +56,13 @@ const BucketListItem: React.FC<BucketListItemProps> = ({ activity, onMarkAsVisit
         </CardContent>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', padding: 1, gap: 1 }}>
           <IconButton
-            onClick={() => onMarkAsVisited(activity.activity_id)}
+            onClick={handleMarkAsVisited}
             sx={{ backgroundColor: theme.palette.primary.main, color: 'white', '&:hover': { backgroundColor: theme.palette.primary.dark } }}
           >
             <StarIcon />
           </IconButton>
           <IconButton
-            onClick={() => onDelete(activity.activity_id)}
+            onClick={handleDelete}
             sx={{ backgroundColor: theme.palette.secondary.main, color: 'white', '&:hover': { backgroundColor: theme.palette.secondary.dark } }}
           >
             <DeleteIcon />

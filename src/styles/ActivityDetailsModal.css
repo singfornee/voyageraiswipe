@@ -1,46 +1,54 @@
-.activity-details-modal .MuiBackdrop-root {
-  background-color: rgba(0, 0, 0, 0.8); /* Darken the background */
-}
-
-.modal-content {
-  background-color: #1d1d1d; /* Background color matches the theme */
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
-  position: relative;
-  text-align: center;
-}
-
-.modal-icon {
-  margin-right: 8px;
-  color: var(--primary-color); /* Use primary color */
-  vertical-align: middle;
-}
-
-.modal-info {
+/* For the button container */
+.button-group {
   display: flex;
-  align-items: center;
-  margin-bottom: 10px;
+  justify-content: center;
+  gap: 12px; /* Adds space between buttons */
+  margin-top: 24px; /* Space above the button group */
 }
 
-.modal-image {
-  border-radius: 10px;
-  max-width: 100%;
-  object-fit: cover;
-}
-
-.close-icon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-}
-
-.modal-category {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background-color: var(--primary-color); /* Rounded rectangle for category */
+/* Style for the "Add to Bucket List" button */
+.bucket-list-button {
+  background-color: var(--secondary-color); /* Use secondary color */
   color: #ffffff;
-  margin-top: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.bucket-list-button:hover {
+  background-color: darken(var(--secondary-color), 10%); /* Darken on hover */
+  transform: translateY(-2px); /* Slightly lift the button on hover */
+}
+
+/* Style for the "Mark as Visited" button */
+.visited-button {
+  background-color: var(--primary-color); /* Use primary color */
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.visited-button:hover {
+  background-color: darken(var(--primary-color), 10%); /* Darken on hover */
+  transform: translateY(-2px); /* Slightly lift the button on hover */
+}
+
+/* Style for the "Cancel" button */
+.cancel-button {
+  background-color: transparent; /* Transparent background */
+  color: var(--text-primary); /* Use primary text color */
+  padding: 10px 20px;
+  border: 2px solid var(--text-primary); /* Border matching the text color */
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s ease;
+}
+
+.cancel-button:hover {
+  background-color: var(--text-primary); /* Fill with text color on hover */
+  color: #ffffff; /* Change text color to white */
+  transform: translateY(-2px); /* Slightly lift the button on hover */
 }
