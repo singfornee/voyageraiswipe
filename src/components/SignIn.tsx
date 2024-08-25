@@ -1,48 +1,73 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, TextField, Container, Typography, Box, Paper, Divider, CssBaseline } from '@mui/material';
+import { Button, TextField, Container, Typography, Box, Paper, Divider, CssBaseline, Snackbar, CircularProgress } from '@mui/material';
+import { Alert } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
-import GoogleIcon from '@mui/icons-material/Google'; // Import Google icon from Material-UI
-import { ThemeProvider } from '@mui/material/styles'; // Import ThemeProvider
-import { darkTheme } from '../styles/theme'; // Import your dark theme
+import GoogleIcon from '@mui/icons-material/Google';
+import { ThemeProvider } from '@mui/material/styles';
+import { darkTheme } from '../styles/theme';
 
 const SignIn: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loginWithGoogle } = useAuth() ?? {}; // Ensure loginWithGoogle is available in useAuth
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
+  const { login, loginWithGoogle } = useAuth() ?? {};
   const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (login) {
-      try {
-        await login(email, password);
-        navigate('/dashboard');
-      } catch (error) {
-        console.error('Login failed:', error);
-      }
-    } else {
+    if (!login) {
       console.error('Login function is undefined.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login failed:', err);
+      setError('Failed to sign in. Please check your credentials and try again.');
+      setOpenSnackbar(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    if (loginWithGoogle) {
-      try {
-        await loginWithGoogle();
-        navigate('/dashboard');
-      } catch (error) {
-        console.error('Google Sign-In failed:', error);
-      }
-    } else {
+    if (!loginWithGoogle) {
       console.error('Google login function is undefined.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await loginWithGoogle();
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Google Sign-In failed:', err);
+      setError('Google Sign-In failed. Please try again.');
+      setOpenSnackbar(true);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
+
   return (
-    <ThemeProvider theme={darkTheme}> {/* Apply dark theme */}
-      <CssBaseline /> {/* Ensure baseline styles are applied */}
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <Container 
         maxWidth="xs" 
         sx={{ 
@@ -60,7 +85,7 @@ const SignIn: React.FC = () => {
             backgroundColor: 'background.paper', 
             borderRadius: 6,
             width: '100%',
-            boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)', // Soft shadow for a modern look
+            boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
           }}
         >
           <Box textAlign="center" sx={{ mb: 3 }}>
@@ -85,23 +110,23 @@ const SignIn: React.FC = () => {
                 sx: {
                   color: 'text.primary',
                   backgroundColor: 'background.default',
-                  borderRadius: '12px', // More rounded corners
-                  padding: '10px', // Extra padding for input fields
+                  borderRadius: '12px',
+                  padding: '10px',
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'transparent', // Remove the default border
+                    borderColor: 'transparent',
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main', // Change on hover
+                    borderColor: 'primary.main',
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main', // Focus color
+                    borderColor: 'primary.main',
                   },
                 },
               }}
               InputLabelProps={{
                 sx: {
                   color: 'text.secondary',
-                  fontSize: '1rem', // Slightly larger font size for the label
+                  fontSize: '1rem',
                 },
               }}
             />
@@ -118,23 +143,23 @@ const SignIn: React.FC = () => {
                 sx: {
                   color: 'text.primary',
                   backgroundColor: 'background.default',
-                  borderRadius: '12px', // More rounded corners
-                  padding: '10px', // Extra padding for input fields
+                  borderRadius: '12px',
+                  padding: '10px',
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'transparent', // Remove the default border
+                    borderColor: 'transparent',
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main', // Change on hover
+                    borderColor: 'primary.main',
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'primary.main', // Focus color
+                    borderColor: 'primary.main',
                   },
                 },
               }}
               InputLabelProps={{
                 sx: {
                   color: 'text.secondary',
-                  fontSize: '1rem', // Slightly larger font size for the label
+                  fontSize: '1rem',
                 },
               }}
             />
@@ -142,7 +167,7 @@ const SignIn: React.FC = () => {
               <Button 
                 variant="text" 
                 color="primary" 
-                onClick={() => navigate('/forgotpassword')} // Ensure correct path
+                onClick={() => navigate('/forgotpassword')}
                 sx={{ textTransform: 'none', fontSize: '0.9rem' }}
               >
                 Forgot Password?
@@ -155,17 +180,18 @@ const SignIn: React.FC = () => {
               fullWidth
               sx={{ 
                 marginTop: 2, 
-                borderRadius: '12px', // Rounded corners for the button
-                padding: '12px 0', // Increase padding for a more substantial button
-                fontSize: '1rem', // Slightly larger font size
-                fontWeight: 'bold', // Bold text for better emphasis
+                borderRadius: '12px',
+                padding: '12px 0',
+                fontSize: '1rem',
+                fontWeight: 'bold',
                 '&:focus': {
-                  outline: 'none', // Remove default outline
-                  boxShadow: '0 0 0 4px rgba(57, 255, 20, 0.5)', // Custom focus shadow
+                  outline: 'none',
+                  boxShadow: '0 0 0 4px rgba(57, 255, 20, 0.5)',
                 },
               }}
+              disabled={loading}
             >
-              Sign In
+              {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
           </form>
           <Divider sx={{ my: 3 }}>or</Divider>
@@ -177,18 +203,19 @@ const SignIn: React.FC = () => {
               startIcon={<GoogleIcon />}
               onClick={handleGoogleSignIn}
               sx={{
-                borderRadius: '12px', // Circular button
-                padding: '12px', // Extra padding for a sleek look
-                fontSize: '1rem', // Slightly larger font
-                textTransform: 'none', // Keep text capitalization normal
+                borderRadius: '12px',
+                padding: '12px',
+                fontSize: '1rem',
+                textTransform: 'none',
                 fontWeight: 'bold',
                 '&:focus': {
-                  outline: 'none', // Remove default outline
-                  boxShadow: '0 0 0 4px rgba(57, 255, 20, 0.5)', // Custom focus shadow
+                  outline: 'none',
+                  boxShadow: '0 0 0 4px rgba(57, 255, 20, 0.5)',
                 },
               }}
+              disabled={loading}
             >
-              Sign in with Google
+              {loading ? <CircularProgress size={24} /> : 'Sign in with Google'}
             </Button>
           </Box>
           <Box textAlign="center" mt={3}>
@@ -205,6 +232,16 @@ const SignIn: React.FC = () => {
             </Typography>
           </Box>
         </Paper>
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        </Snackbar>
       </Container>
     </ThemeProvider>
   );

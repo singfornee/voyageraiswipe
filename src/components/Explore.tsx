@@ -5,13 +5,14 @@ import { CircularProgress, Typography, Box } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Activity } from '../types/activity';
 import { useAuth } from '../contexts/AuthContext';
-import { addToBucketList, addToVisitedList, fetchActivitiesFromFirestore, fetchAttractionById } from '../firestore';
+import { fetchActivitiesFromFirestore, fetchAttractionById } from '../firestore';
 import { fetchAttractionPhoto } from '../api/unsplashApi';
 import { useBucketList } from '../contexts/BucketListContext';
 import { useVisitedList } from '../contexts/VisitedListContext';
 import ActivityCard from './ActivityCard';
 import ActivityDetailsModal from './ActivityDetailsModal';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../styles/Explore.css';
 
 interface Attraction {
@@ -305,6 +306,9 @@ const Explore: React.FC = () => {
         onAddToBucketList={handleAddToBucketList}
         onMarkAsVisited={handleVisited}
       />
+
+      {/* Add the ToastContainer here */}
+      <ToastContainer />
     </Box>
   );
 };
