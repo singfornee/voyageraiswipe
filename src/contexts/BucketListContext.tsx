@@ -159,6 +159,17 @@ export const BucketListProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 };
 
+const toggleBucketList = async (activity: Activity) => {
+  const isAlreadyInList = bucketList.some(item => item.activity_id === activity.activity_id);
+
+  if (isAlreadyInList) {
+    await removeFromBucketList(activity.activity_id);
+  } else {
+    await addToBucketList(activity);
+  }
+};
+
+
   const refresh = () => {
     fetchBucketList();
   };

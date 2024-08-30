@@ -7,7 +7,12 @@ import {
   query, 
   where,
   updateDoc,
-  setDoc
+  setDoc,
+  QueryDocumentSnapshot,
+  DocumentData,
+  orderBy,
+  limit,
+  startAfter
 } from 'firebase/firestore';
 import { db } from './firebase';  // Ensure this path is correct relative to your file structure
 import { Activity, Attraction } from './types/activity';  // Import the necessary types
@@ -26,10 +31,28 @@ export const updateProfileIcon = async (userId: string, iconUrl: string) => {
 };
 
 // Fetch all activities from the 'activities' collection in Firestore
-export const fetchActivitiesFromFirestore = async (): Promise<Activity[]> => {
+export const fetchActivitiesFromFirestore = async (
+  lastVisible: QueryDocumentSnapshot<DocumentData> | null,
+  pageSize: number = 10
+): Promise<{ activities: Activity[], lastVisible: QueryDocumentSnapshot<DocumentData> | null }> => {
   const activitiesCollection = collection(db, 'activities');
-  const activitiesSnapshot = await getDocs(activitiesCollection);
-  return activitiesSnapshot.docs.map((doc) => doc.data() as Activity);
+  
+  let activitiesQuery = query(activitiesCollection, orderBy('activity_id'), limit(pageSize));
+
+  if (lastVisible) {
+    activitiesQuery = query(activitiesCollection, orderBy('activity_id'), startAfter(lastVisible), limit(pageSize));
+  }
+
+  const activitiesSnapshot = await getDocs(activitiesQuery);
+  const activities = activitiesSnapshot.docs.map((doc) => {
+    const activity = doc.data() as Activity;
+    activity.activity_id = doc.id;  // Ensure the ID is included
+    return activity;
+  });
+
+  const lastVisibleDoc = activitiesSnapshot.docs.length > 0 ? activitiesSnapshot.docs[activitiesSnapshot.docs.length - 1] : null;
+
+  return { activities, lastVisible: lastVisibleDoc };
 };
 
 // Fetch a single attraction by its ID from the 'attractions' collection in Firestore

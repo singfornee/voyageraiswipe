@@ -1,131 +1,58 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Container, Typography, Box, Grid, Card, CardContent, CircularProgress as CircularProgressIndicator, Tooltip } from '@mui/material';
+import React from 'react';
+import { Container, Typography, Box, Grid, Card, CardContent, CircularProgress as CircularProgressIndicator, Tooltip, Button } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useBucketList } from '../contexts/BucketListContext';
 import { useVisitedList } from '../contexts/VisitedListContext';
-import { fetchActivitiesFromFirestore, fetchUserPreferences } from '../firestore'; // Ensure this method is implemented
 import ActivityCard from './ActivityCard';
-import { Activity } from '../types/activity';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from 'react-router-dom';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ExploreIcon from '@mui/icons-material/Explore';
-import { Button } from '@mui/material';
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+import useTopPicks from '../hooks/useTopPicks';  // Import the custom hook
+import { Activity } from '../types/activity'; // Adjust the path based on your project structure
 
 
 const Dashboard: React.FC = () => {
   const { currentUser } = useAuth();
   const { bucketList, addToBucketList } = useBucketList();
   const { visitedList, addToVisitedList } = useVisitedList();
-  const [recommendedActivities, setRecommendedActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { topPicks, loading, error } = useTopPicks(currentUser?.uid ?? '');  // Use the custom hook
   const navigate = useNavigate();
 
-  const isInBucketList = useCallback(
-    (activityId: string) => bucketList.some(item => item.activity_id === activityId),
-    [bucketList]
-  );
+  const isInBucketList = (activityId: string) => bucketList.some(item => item.activity_id === activityId);
+  const isInVisitedList = (activityId: string) => visitedList.some(item => item.activity_id === activityId);
 
-  const isInVisitedList = useCallback(
-    (activityId: string) => visitedList.some(item => item.activity_id === activityId),
-    [visitedList]
-  );
-
-  const loadTopPicksFromLocalStorage = () => {
-    const topPicks = localStorage.getItem('topPicks');
-    const lastUpdate = localStorage.getItem('topPicksLastUpdate');
-    if (topPicks && lastUpdate) {
-      const now = new Date();
-      const lastUpdateDate = new Date(lastUpdate);
-      if (now.toDateString() === lastUpdateDate.toDateString()) {
-        return JSON.parse(topPicks) as Activity[];
-      }
-    }
-    return null;
-  };
-
-  const saveTopPicksToLocalStorage = (topPicks: Activity[]) => {
-    localStorage.setItem('topPicks', JSON.stringify(topPicks));
-    localStorage.setItem('TopPicksLastUpdate', new Date().toISOString());
-  };
-
-  const handleAddToBucketList = useCallback(
-    async (activity: Activity) => {
-      if (!currentUser) return;
-
-      if (!isInBucketList(activity.activity_id)) {
-        try {
-          await addToBucketList(activity);
-          toast.success(`${activity.activity_full_name} added to bucket list!`, { position: 'top-right' });
-        } catch (error) {
-          console.error('Error adding to bucket list:', error);
-          toast.error('Failed to add to bucket list.', { position: 'top-right' });
-        }
-      } else {
-        toast.info(`${activity.activity_full_name} is already in your bucket list!`, { position: 'top-right' });
-      }
-    },
-    [currentUser, addToBucketList, isInBucketList]
-  );
-
-  const handleMarkAsVisited = useCallback(
-    async (activity: Activity) => {
-      if (!currentUser) return;
-
-      if (!isInVisitedList(activity.activity_id)) {
-        try {
-          await addToVisitedList(activity);
-          toast.success(`${activity.activity_full_name} marked as visited!`, { position: 'top-right' });
-        } catch (error) {
-          console.error('Error marking as visited:', error);
-          toast.error('Failed to mark as visited.', { position: 'top-right' });
-        }
-      } else {
-        toast.info(`${activity.activity_full_name} is already in your visited list!`, { position: 'top-right' });
-      }
-    },
-    [currentUser, addToVisitedList, isInVisitedList]
-  );
-
-  useEffect(() => {
-    const fetchActivities = async () => {
-      setLoading(true);
+  const handleAddToBucketList = async (activity: Activity) => {
+    if (!currentUser) return;
+    if (!isInBucketList(activity.activity_id)) {
       try {
-        const storedTopPicks = loadTopPicksFromLocalStorage();
-  
-        if (storedTopPicks) {
-          setRecommendedActivities(storedTopPicks);
-        } else {
-          const allActivities = await fetchActivitiesFromFirestore();
-          const userPreferences: string[] = await fetchUserPreferences(currentUser?.uid ?? '');  // Explicitly typed
-  
-          // Filter activities based on user preferences
-          const filteredActivities = allActivities.filter(activity =>
-            userPreferences.some(pref =>
-              activity.activities_keywords?.includes(pref)
-            )
-          );
-  
-          // If no activities match, fall back to all activities
-          const recommended = filteredActivities.length > 0 ? filteredActivities.slice(0, 3) : allActivities.slice(0, 3);
-          setRecommendedActivities(recommended);
-          saveTopPicksToLocalStorage(recommended);
-        }
-      } catch (err) {
-        console.error('Failed to fetch activities:', err);
-        setError('Failed to fetch activities.');
-      } finally {
-        setLoading(false);
+        await addToBucketList(activity);
+        toast.success(`${activity.activity_full_name} added to bucket list!`, { position: 'top-right' });
+      } catch (error) {
+        console.error('Error adding to bucket list:', error);
+        toast.error('Failed to add to bucket list.', { position: 'top-right' });
       }
-    };
-  
-    fetchActivities();
-  }, [currentUser, isInBucketList, isInVisitedList]);
-  
+    } else {
+      toast.info(`${activity.activity_full_name} is already in your bucket list!`, { position: 'top-right' });
+    }
+  };
+
+  const handleMarkAsVisited = async (activity: Activity) => {
+    if (!currentUser) return;
+    if (!isInVisitedList(activity.activity_id)) {
+      try {
+        await addToVisitedList(activity);
+        toast.success(`${activity.activity_full_name} marked as visited!`, { position: 'top-right' });
+      } catch (error) {
+        console.error('Error marking as visited:', error);
+        toast.error('Failed to mark as visited.', { position: 'top-right' });
+      }
+    } else {
+      toast.info(`${activity.activity_full_name} is already in your visited list!`, { position: 'top-right' });
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ padding: '32px', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -324,7 +251,7 @@ const Dashboard: React.FC = () => {
               gap: '16px',
             }}
           >
-            {recommendedActivities.map((activity) => (
+            {topPicks.map((activity) => (
               <ActivityCard
                 key={activity.activity_id}
                 activity={activity}

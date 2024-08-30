@@ -13,8 +13,18 @@
 /* Style for the activity card container */
 .activity-card-container {
   width: 100%;
-  max-width: 600px;
+  max-width: 360px; /* Adjust the max-width to ensure 3 cards per row */
   margin-bottom: 24px;
+}
+
+/* Adjusting Grid Container to ensure spacing */
+.explore-grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Ensure exactly 3 columns */
+  grid-gap: 24px; /* Space between the grid items */
+  width: 100%;
+  max-width: 1200px; /* Optional: Limit the max-width of the grid container */
+  justify-content: space-between; /* Ensure proper spacing between columns */
 }
 
 /* Style for the modal in the explore component */

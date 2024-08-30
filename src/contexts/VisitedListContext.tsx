@@ -59,6 +59,17 @@ export const VisitedListProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   };
 
+  const toggleVisitedList = async (activity: Activity) => {
+    const isAlreadyInList = visitedList.some(item => item.activity_id === activity.activity_id);
+  
+    if (isAlreadyInList) {
+      await removeVisitedActivity(activity.activity_id);
+    } else {
+      await addToVisitedList(activity);
+    }
+  };
+  
+
   const removeVisitedActivity = async (activityId: string) => {
     if (!currentUser) return;
 

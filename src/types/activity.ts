@@ -11,6 +11,8 @@ export interface Activity {
   attraction_id: string;  // Required: Ties the activity to an attraction.
   attraction_name?: string;  // Optional: Already correctly optional.
   imageUrl?: string | null;  // Optional: Correctly allows for a string URL or null.
+  isFavorite?: boolean;  // Add these properties
+  isVisited?: boolean;   // Add these properties
 }
 
 

@@ -1,0 +1,127 @@
+.fullscreen-swiper {
+  position: relative;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  height: 100vh;
+  background-color: var(--background-default);
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  touch-action: pan-y;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-swiper img {
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 64px);
+  object-fit: cover;
+  border-radius: 16px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.fullscreen-swiper .gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, #000);
+  border-radius: 16px;
+  z-index: 1;
+}
+
+.fullscreen-swiper .bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+.fullscreen-swiper .keywords {
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
+  margin-bottom: 4px;
+  display: flex;
+  gap: 8px;
+}
+
+.fullscreen-swiper .keyword-box {
+  padding: 2px 6px;
+  background-color: var(--secondary-main);
+  border-radius: 12px;
+  display: inline-block;
+  font-size: 0.875rem;
+}
+
+.fullscreen-swiper .actions {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 2;
+}
+
+.fullscreen-swiper .drawer {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 16px;
+  background-color: var(--background-default);
+  max-height: 60vh;
+  overflow-y: auto;
+  margin: 0 auto;
+}
+
+.drawer-keywords {
+  margin-top: 16px;
+}
+
+.drawer-keyword {
+  background-color: var(--grey-200);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+}
+
+.drawer-close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .fullscreen-swiper {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .fullscreen-swiper img {
+    max-height: 100%;
+    border-radius: 0;
+  }
+
+  .fullscreen-swiper .bottom-bar {
+    border-radius: 0;
+  }
+
+  .fullscreen-swiper .actions {
+    right: 8px;
+  }
+
+  .fullscreen-swiper .drawer {
+    border-radius: 0;
+    width: 100%;
+  }
+}

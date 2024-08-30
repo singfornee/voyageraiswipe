@@ -1,68 +1,92 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, TextField, Container, Typography, Box, Paper, Divider, CssBaseline, Snackbar, CircularProgress } from '@mui/material';
-import { Alert } from '@mui/material';
+import { Alert, AlertColor } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import { auth } from '../firebase';
 import GoogleIcon from '@mui/icons-material/Google';
 import { ThemeProvider } from '@mui/material/styles';
 import { darkTheme } from '../styles/theme';
 
 const SignIn: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: AlertColor }>({
+    open: false,
+    message: '',
+    severity: 'error',
+  });
 
   const { login, loginWithGoogle } = useAuth() ?? {};
   const navigate = useNavigate();
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCredentials({
+      ...credentials,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    if (!login) {
-      console.error('Login function is undefined.');
-      return;
-    }
+    if (!login) return console.error('Login function is undefined.');
 
     setLoading(true);
-    setError(null);
-
     try {
-      await login(email, password);
-      navigate('/dashboard');
+      await login(credentials.email, credentials.password);
+      await handleEmailVerification();
     } catch (err) {
       console.error('Login failed:', err);
-      setError('Failed to sign in. Please check your credentials and try again.');
-      setOpenSnackbar(true);
+      setSnackbar({ open: true, message: 'Failed to sign in. Please check your credentials and try again.', severity: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    if (!loginWithGoogle) {
-      console.error('Google login function is undefined.');
-      return;
-    }
-
+    if (!loginWithGoogle) return console.error('Google login function is undefined.');
+  
     setLoading(true);
-    setError(null);
-
     try {
-      await loginWithGoogle();
-      navigate('/dashboard');
+      // Sign in with Google
+      const userCredential = await loginWithGoogle();
+  
+      // Force reload user data to ensure we have the latest info
+      const user = auth.currentUser;
+      if (user) {
+        await user.reload();
+        // After reloading, check email verification and onboarding status
+        await handleEmailVerification();
+      }
     } catch (err) {
       console.error('Google Sign-In failed:', err);
-      setError('Google Sign-In failed. Please try again.');
-      setOpenSnackbar(true);
+      setSnackbar({ open: true, message: 'Google Sign-In failed. Please try again.', severity: 'error' });
     } finally {
       setLoading(false);
     }
   };
+  
+
+  const handleEmailVerification = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      await user.reload(); // Reload user data to get the latest verification status
+      if (user.emailVerified) {
+        const isFirstTimeUser = localStorage.getItem('isFirstTimeUser');
+        if (isFirstTimeUser) {
+          localStorage.removeItem('isFirstTimeUser');
+          navigate('/onboarding');
+        } else {
+          navigate('/dashboard');
+        }
+      } else {
+        navigate('/email-verification-pending');
+      }
+    }
+  };  
 
   const handleCloseSnackbar = () => {
-    setOpenSnackbar(false);
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -86,6 +110,7 @@ const SignIn: React.FC = () => {
             borderRadius: 6,
             width: '100%',
             boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+            pointerEvents: loading ? 'none' : 'auto',
           }}
         >
           <Box textAlign="center" sx={{ mb: 3 }}>
@@ -99,9 +124,10 @@ const SignIn: React.FC = () => {
           <form onSubmit={handleSubmit}>
             <TextField
               label="Email Address"
+              name="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={credentials.email}
+              onChange={handleInputChange}
               fullWidth
               required
               margin="normal"
@@ -132,9 +158,10 @@ const SignIn: React.FC = () => {
             />
             <TextField
               label="Password"
+              name="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={credentials.password}
+              onChange={handleInputChange}
               fullWidth
               required
               margin="normal"
@@ -233,13 +260,13 @@ const SignIn: React.FC = () => {
           </Box>
         </Paper>
         <Snackbar
-          open={openSnackbar}
+          open={snackbar.open}
           autoHideDuration={6000}
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
-            {error}
+          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
           </Alert>
         </Snackbar>
       </Container>
