@@ -17,9 +17,10 @@ import { lightTheme, darkTheme } from './styles/theme';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import './styles/App.css';
-import { ToastNotificationContainer } from './components/notifications'; // Import the new toast container
+import ToastNotificationContainer from './components/ToastNotificationContainer';
+import { ToastNotificationProvider } from './contexts/NotificationContext';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // Import React Query
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const Explore = lazy(() => import('./components/Explore'));
@@ -36,7 +37,6 @@ const App: React.FC = () => {
   const theme = useTheme();
   const isMediumOrLargerScreen = useMediaQuery(theme.breakpoints.up('md'));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const isMediumScreen = useMediaQuery(theme.breakpoints.between('md', 'lg'));
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   const handleToggleTheme = () => {
@@ -58,102 +58,104 @@ const App: React.FC = () => {
   }
 
   return (
-    <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
-      <CssBaseline />
-      <QueryClientProvider client={queryClient}>
-        <Router>
-          {currentUser ? (
-            <Box className="outer-container">
-              <Box
-                className="app-container"
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  padding: isSmallScreen ? '8px' : '16px',
-                  minHeight: '100vh',
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: isSmallScreen ? 'column' : 'row',
-                    maxWidth: '1200px',
-                    width: '100%',
-                  }}
-                >
-                  <NavBar />
+      <ToastNotificationProvider> {/* Wrap with the ToastNotificationProvider */}
+        <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
+          <CssBaseline />
+          <QueryClientProvider client={queryClient}>
+            <Router>
+              {currentUser ? (
+                <Box className="outer-container">
                   <Box
-                    component="main"
+                    className="app-container"
                     sx={{
-                      flexGrow: 1,
-                      padding: isSmallScreen ? '8px' : '24px',
                       display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      maxWidth: '1000px',
-                      margin: '0 auto',
-                      width: isMediumOrLargerScreen ? 'calc(100% - 240px)' : '100%',
+                      justifyContent: 'center',
+                      padding: isSmallScreen ? '8px' : '16px',
+                      minHeight: '100vh',
                     }}
                   >
                     <Box
-                      display="flex"
-                      justifyContent="flex-end"
-                      width="100%"
-                      mb={isSmallScreen ? 1 : 2}
-                    >
-                      <IconButton onClick={handleToggleTheme} color="inherit">
-                        {isDarkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-                      </IconButton>
-                    </Box>
-                    <Box sx={{ width: '100%', maxWidth: '600px', mb: 2 }}>
-                      <SearchBar />
-                    </Box>
-                    <Container
                       sx={{
-                        width: '100%',
-                        padding: '16px',
-                        flexGrow: 1,
                         display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
+                        flexDirection: isSmallScreen ? 'column' : 'row',
+                        maxWidth: '1200px',
+                        width: '100%',
                       }}
                     >
-                      <VisitedListProvider>
-                        <BucketListProvider>
-                          <Suspense fallback={<CircularProgress />}>
-                            <Routes>
-                              <Route path="/" element={<Dashboard />} />
-                              <Route path="/explore" element={<Explore />} />
-                              <Route path="/bucketlist" element={<BucketList />} />
-                              <Route path="/visited" element={<Visited />} />
-                              <Route path="/profile" element={<ProfilePage />} />
-                              <Route path="/search-results" element={<SearchResults />} />
-                              <Route path="*" element={<Navigate to="/" />} />
-                            </Routes>
-                          </Suspense>
-                        </BucketListProvider>
-                      </VisitedListProvider>
-                    </Container>
+                      <NavBar />
+                      <Box
+                        component="main"
+                        sx={{
+                          flexGrow: 1,
+                          padding: isSmallScreen ? '8px' : '24px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          maxWidth: '1000px',
+                          margin: '0 auto',
+                          width: isMediumOrLargerScreen ? 'calc(100% - 240px)' : '100%',
+                        }}
+                      >
+                        <Box
+                          display="flex"
+                          justifyContent="flex-end"
+                          width="100%"
+                          mb={isSmallScreen ? 1 : 2}
+                        >
+                          <IconButton onClick={handleToggleTheme} color="inherit">
+                            {isDarkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+                          </IconButton>
+                        </Box>
+                        <Box sx={{ width: '100%', maxWidth: '600px', mb: 2 }}>
+                          <SearchBar />
+                        </Box>
+                        <Container
+                          sx={{
+                            width: '100%',
+                            padding: '16px',
+                            flexGrow: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <VisitedListProvider>
+                            <BucketListProvider>
+                              <Suspense fallback={<CircularProgress />}>
+                                <Routes>
+                                  <Route path="/" element={<Dashboard />} />
+                                  <Route path="/explore" element={<Explore />} />
+                                  <Route path="/bucketlist" element={<BucketList />} />
+                                  <Route path="/visited" element={<Visited />} />
+                                  <Route path="/profile" element={<ProfilePage />} />
+                                  <Route path="/search-results" element={<SearchResults />} />
+                                  <Route path="*" element={<Navigate to="/" />} />
+                                </Routes>
+                              </Suspense>
+                            </BucketListProvider>
+                          </VisitedListProvider>
+                        </Container>
+                      </Box>
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
-            </Box>
-          ) : (
-            <Box className="auth-container" sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Routes>
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/forgotpassword" element={<ForgotPassword />} />
-                <Route path="/email-verification-pending" element={<EmailVerificationPending />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="*" element={<Navigate to="/signin" />} />
-              </Routes>
-            </Box>
-          )}
-        </Router>
-        <ToastNotificationContainer /> {/* Use the centralized ToastContainer */}
-      </QueryClientProvider>
-    </ThemeProvider>
+              ) : (
+                <Box className="auth-container" sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Routes>
+                    <Route path="/signin" element={<SignIn />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/forgotpassword" element={<ForgotPassword />} />
+                    <Route path="/email-verification-pending" element={<EmailVerificationPending />} />
+                    <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="*" element={<Navigate to="/signin" />} />
+                  </Routes>
+                </Box>
+              )}
+            </Router>
+            <ToastNotificationContainer /> {/* Move the ToastNotificationContainer here */}
+          </QueryClientProvider>
+        </ThemeProvider>
+      </ToastNotificationProvider>
   );
 };
 

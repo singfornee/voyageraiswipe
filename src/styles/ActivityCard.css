@@ -8,6 +8,7 @@
   margin: 16px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   background-color: var(--background-paper);
+  height: 600px; /* Fixed height for the card */
 }
 
 .activity-card:not(.spotlight-card) {
@@ -20,37 +21,33 @@
   margin: 0; /* Center the spotlight card */
 }
 
-.activity-card-container:hover {
+.activity-card:hover {
   cursor: pointer;
-  transform: scale(1.05); /* Slightly enlarge the card */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Add a shadow to indicate clickability */
+  border-color: #6A5ACD; /* Change this to the purple color defined in your theme */
+  transform: scale(1.05); /* Slightly enlarge */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); /* Add a deeper shadow */
 }
 
 .image-container {
   width: 100%;
   height: 300px;
   overflow: hidden;
+  position: relative; /* Allow absolute positioning for overlays */
 }
 
 .activity-card.spotlight-card .image-container {
-  height: 60vh; /* Increase height for spotlight card image */
+  height: 60vh; /* Increased height for spotlight card image */
 }
 
-.explore-activity-image {
+.explore-activity-image,
+.no-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center; /* Ensure the image is centered */
-  transition: transform 0.3s ease;
-}
-
-.activity-card:hover .explore-activity-image {
-  transform: scale(1.02); /* Reduce the zoom effect to prevent excessive cropping */
 }
 
 .no-image {
-  width: 100%;
-  height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -68,20 +65,20 @@
 }
 
 .activity-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem; /* Increased font size */
   font-weight: 700;
   margin-bottom: 8px;
   color: var(--text-primary);
 }
 
 .attraction-name {
-  font-size: 1rem;
+  font-size: 1.1rem; /* Adjusted for better hierarchy */
   font-weight: 500;
   color: var(--text-secondary);
 }
 
 .activity-description {
-  font-size: 0.875rem;
+  font-size: 0.9rem; /* Slightly larger for readability */
   color: var(--text-primary);
   margin-top: 8px;
 }
@@ -96,11 +93,14 @@
 
 .buttons-container button {
   transition: background-color 0.3s ease, transform 0.2s ease;
+  border: none; /* Ensure no border */
+  border-radius: 20px; /* Make buttons rounded */
+  padding: 8px 16px; /* Add padding for better touch targets */
 }
 
 .buttons-container button:hover {
   background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 50%;
+  border-radius: 30px; /* Increased radius for a more pronounced effect */
 }
 
 .buttons-container button:active {

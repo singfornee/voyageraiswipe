@@ -1,13 +1,14 @@
 import React, { createContext, useState, useCallback, useContext, ReactNode, useMemo } from 'react';
-import { Activity } from '../types/activity';
-import { fetchSuggestions } from '../api/searchService';
+import { DatabaseItem } from '../types/databaseTypes';
+import { fetchSuggestions } from '../api/searchService'; // Adjust based on your API function
 import debounce from 'lodash.debounce';
 
 interface SearchContextProps {
-  searchResults: Activity[];
+  searchResults: DatabaseItem[];
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  performSearch: (term: string) => Promise<Activity[]>;  // Updated return type to Promise<Activity[]>
+  performSearch: (term: string) => Promise<DatabaseItem[]>;
+  clearSearch: () => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -16,28 +17,30 @@ const SearchContext = createContext<SearchContextProps | undefined>(undefined);
 
 export const SearchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResults, setSearchResults] = useState<Activity[]>([]);
+  const [searchResults, setSearchResults] = useState<DatabaseItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debounce the search function to limit API calls
   const debouncedSearch = useMemo(
-    () => debounce(async (term: string): Promise<Activity[]> => {  // Updated return type to Promise<Activity[]>
+    () => debounce(async (term: string): Promise<DatabaseItem[]> => {
       try {
         setIsLoading(true);
-        setError(null);  // Reset any previous errors
+        setError(null);
         if (term.trim()) {
+          console.log(`Searching for: ${term}`); // Debugging line
           const results = await fetchSuggestions(term.trim());
+          console.log(`Results:`, results); // Debugging line
           setSearchResults(results);
-          return results;  // Return results as Activity[]
+          return results; // Return results here
         } else {
           setSearchResults([]);
-          return [];  // Return an empty array if no term
+          return [];
         }
       } catch (err) {
-        setError('Failed to fetch search results. Please try again.');
+        console.error(err);
+        setError('Failed to fetch search results. Please check your connection or try again later.');
         setSearchResults([]);
-        return [];  // Return an empty array in case of an error
+        return []; // Return an empty array in case of an error
       } finally {
         setIsLoading(false);
       }
@@ -45,15 +48,27 @@ export const SearchProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     []
   );
 
-  const performSearch = useCallback((term: string): Promise<Activity[]> => {
+  const performSearch = useCallback(async (term: string): Promise<DatabaseItem[]> => {
     setSearchTerm(term);
-    return debouncedSearch(term);  // Return the result of debouncedSearch
+    return await debouncedSearch(term); // Ensure to return the results
   }, [debouncedSearch]);
 
-  // Memoize the context value to prevent unnecessary re-renders
+  const clearSearch = useCallback(() => {
+    setSearchTerm('');
+    setSearchResults([]);
+  }, []);
+
   const contextValue = useMemo(
-    () => ({ searchResults, searchTerm, setSearchTerm, performSearch, isLoading, error }),
-    [searchResults, searchTerm, performSearch, isLoading, error]
+    () => ({
+      searchResults,
+      searchTerm,
+      setSearchTerm,
+      performSearch,
+      clearSearch,
+      isLoading,
+      error,
+    }),
+    [searchResults, searchTerm, performSearch, clearSearch, isLoading, error]
   );
 
   return (

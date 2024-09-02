@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { fetchActivitiesFromFirestore, fetchUserPreferences } from '../firestore';
-import { Activity } from '../types/activity';
+import { DatabaseItem } from '../types/databaseTypes';
 
 const useTopPicks = (userId: string | null) => {
-  const [topPicks, setTopPicks] = useState<Activity[]>([]);
+  const [topPicks, setTopPicks] = useState<DatabaseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,15 +14,15 @@ const useTopPicks = (userId: string | null) => {
       const now = new Date();
       const lastUpdateDate = new Date(lastUpdate);
       if (now.toDateString() === lastUpdateDate.toDateString()) {
-        return JSON.parse(topPicks) as Activity[];
+        return JSON.parse(topPicks) as DatabaseItem[];
       }
     }
     return null;
   };
 
-  const saveTopPicksToLocalStorage = (topPicks: Activity[]) => {
+  const saveTopPicksToLocalStorage = (topPicks: DatabaseItem[]) => {
     localStorage.setItem('topPicks', JSON.stringify(topPicks));
-    localStorage.setItem('TopPicksLastUpdate', new Date().toISOString());
+    localStorage.setItem('topPicksLastUpdate', new Date().toISOString());
   };
 
   useEffect(() => {
@@ -34,8 +34,13 @@ const useTopPicks = (userId: string | null) => {
         if (storedTopPicks) {
           setTopPicks(storedTopPicks);
         } else {
-          const allActivities = await fetchActivitiesFromFirestore();
+          const { activities: allActivities } = await fetchActivitiesFromFirestore(null, 100); // Ensure it returns an array
+
           const userPreferences = await fetchUserPreferences(userId ?? '');
+
+          if (!Array.isArray(allActivities)) {
+            throw new Error('Expected an array of activities');
+          }
 
           const filteredActivities = allActivities.filter(activity =>
             userPreferences.some(pref => activity.activities_keywords?.includes(pref))

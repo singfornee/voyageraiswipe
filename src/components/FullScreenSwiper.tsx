@@ -1,12 +1,11 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
-  CircularProgress,
   Typography,
   Box,
   IconButton,
   SwipeableDrawer,
-  useMediaQuery,
   Tooltip,
+  Button,
 } from '@mui/material';
 import {
   FavoriteBorder,
@@ -20,26 +19,36 @@ import {
 } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
-import { Activity } from '../types/activity';
-import { fetchAttractionById } from '../firestore';
-import { fetchAttractionPhoto } from '../api/unsplashApi';
+import { DatabaseItem } from '../types/databaseTypes';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { useMediaQuery } from '@mui/material';
+import { fetchAttractionPhoto } from '../api/unsplashApi';
+import { useSwipeable } from 'react-swipeable';
+import { motion } from 'framer-motion';
 import '../styles/FullScreenSwiper.css';
 
+// Lazy load ActivityDetailsModal
+const ActivityDetailsModal = lazy(() => import('./ActivityDetailsModal'));
+
 interface FullScreenSwiperProps {
-  activities: Activity[];
-  bucketList: Activity[];
-  visitedList: Activity[];
+  activities: DatabaseItem[];
+  bucketList: DatabaseItem[];
+  visitedList: DatabaseItem[];
+  onAddToBucketList: (activity: DatabaseItem) => Promise<void>;
+  onMarkAsVisited: (activity: DatabaseItem) => Promise<void>;
 }
 
 const FullScreenSwiper: React.FC<FullScreenSwiperProps> = ({
   activities = [],
   bucketList,
   visitedList,
+  onAddToBucketList,
+  onMarkAsVisited,
 }) => {
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // Check if the screen is small
   const { currentUser } = useAuth();
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -49,71 +58,46 @@ const FullScreenSwiper: React.FC<FullScreenSwiperProps> = ({
     latitude: number;
     longitude: number;
   } | null>(null);
-  const [imageWidth, setImageWidth] = useState<number | null>(null);
-  const imageContainerRef = useRef<HTMLDivElement | null>(null);
-  const imageCache = useRef<{ [key: string]: string }>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '', // Add your API key here
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
   });
 
   const currentActivity = activities.length > 0 ? activities[currentActivityIndex] : null;
 
   useEffect(() => {
-    if (imageContainerRef.current) {
-      const updateImageWidth = () => {
-        setImageWidth(imageContainerRef.current?.clientWidth || null);
-      };
-      updateImageWidth();
-      window.addEventListener('resize', updateImageWidth);
-      return () => window.removeEventListener('resize', updateImageWidth);
-    }
-  }, [imageContainerRef.current]);
-
-  const fetchActivityImage = useCallback(
-    async (activity: Activity): Promise<string> => {
-      if (imageCache.current[activity.activity_id]) {
-        return imageCache.current[activity.activity_id];
-      }
-
-      const photoUrl =
-        (await fetchAttractionPhoto(activity.activity_full_name || activity.activity_name || 'Unknown')) ||
-        'default-image-url.jpg';
-      imageCache.current[activity.activity_id] = photoUrl;
-      return photoUrl;
-    },
-    []
-  );
-
-  
-
-  useEffect(() => {
-    const loadAttractionData = async () => {
+    const loadAttractionData = () => {
       if (currentActivity && currentActivity.attraction_id) {
-        try {
-          const attraction = await fetchAttractionById(currentActivity.attraction_id);
-          if (attraction) {
-            setAttractionData({
-              city: attraction.location_city || 'Unknown City',
-              country: attraction.location_country || 'Unknown Country',
-              latitude: parseFloat(attraction.latitude.toString()), // Convert to string then parse as float
-              longitude: parseFloat(attraction.longitude.toString()), // Convert to string then parse as float
-            });
+        setAttractionData({
+          city: currentActivity.location_city || 'Unknown City',
+          country: currentActivity.location_country || 'Unknown Country',
+          latitude: parseFloat(currentActivity.latitude.toString()),
+          longitude: parseFloat(currentActivity.longitude.toString()),
+        });
+
+        const fetchImage = async () => {
+          try {
+            const fetchedImageUrl = await fetchAttractionPhoto(currentActivity.attraction_name);
+            setImageUrl(fetchedImageUrl || 'https://via.placeholder.com/800');
+          } catch (error) {
+            console.error('Error fetching image:', error);
+            setImageUrl('https://via.placeholder.com/800');
           }
-        } catch (error) {
-          console.error('Failed to fetch attraction data:', error);
-          toast.error('Failed to load attraction details.');
-        }
+        };
+
+        fetchImage();
       }
     };
-  
+
     loadAttractionData();
-  }, [currentActivity]);  
+  }, [currentActivity]);
 
   const handleNextActivity = useCallback(() => {
     if (currentActivityIndex < activities.length - 1) {
       setCurrentActivityIndex((prevIndex) => prevIndex + 1);
-      setDrawerOpen(false);  // Close drawer on next activity
+      setDrawerOpen(false);
     } else {
       toast.info('No more activities available.');
     }
@@ -122,37 +106,35 @@ const FullScreenSwiper: React.FC<FullScreenSwiperProps> = ({
   const handlePreviousActivity = useCallback(() => {
     if (currentActivityIndex > 0) {
       setCurrentActivityIndex((prevIndex) => prevIndex - 1);
-      setDrawerOpen(false);  // Close drawer on previous activity
+      setDrawerOpen(false);
+    } else {
+      toast.info('You are at the first activity.');
     }
   }, [currentActivityIndex]);
 
   const handleAddToBucketList = useCallback(async () => {
     if (currentActivity && currentUser) {
       try {
-        const docId = `${currentUser.uid}_${currentActivity.activity_id}`;
-        // Add to bucket list logic here
-
+        await onAddToBucketList(currentActivity);
         toast.success(`${currentActivity.activity_full_name} added to bucket list!`);
         handleNextActivity();
       } catch (error) {
         toast.error('Failed to add to bucket list. Please try again.');
       }
     }
-  }, [currentActivity, currentUser, handleNextActivity]);
+  }, [currentActivity, currentUser, handleNextActivity, onAddToBucketList]);
 
   const handleMarkAsVisited = useCallback(async () => {
     if (currentActivity && currentUser) {
       try {
-        const docId = `${currentUser.uid}_${currentActivity.activity_id}`;
-        // Mark as visited logic here
-
+        await onMarkAsVisited(currentActivity);
         toast.success(`${currentActivity.activity_full_name} marked as visited!`);
         handleNextActivity();
       } catch (error) {
         toast.error('Failed to mark as visited. Please try again.');
       }
     }
-  }, [currentActivity, currentUser, handleNextActivity]);
+  }, [currentActivity, currentUser, handleNextActivity, onMarkAsVisited]);
 
   const handleToggleDrawer = (open: boolean) => () => {
     setDrawerOpen(open);
@@ -163,21 +145,17 @@ const FullScreenSwiper: React.FC<FullScreenSwiperProps> = ({
       navigator.share({
         title: currentActivity.activity_full_name || 'Check this out!',
         text: `Check out this activity: ${currentActivity.activity_full_name}`,
-        url: window.location.href, // You can change this to the specific URL of the activity if available
+        url: window.location.href,
       })
       .then(() => console.log('Successfully shared'))
       .catch((error) => console.error('Error sharing:', error));
     } else {
-      // Fallback for browsers that don't support the Web Share API
       console.log('Web Share API not supported in this browser.');
-      // Optionally, show a modal or other UI for copying the link or sharing manually
     }
   }, [currentActivity]);
-  
-  const getRandomKeywords = (keywords: string[] | string) => {
-    const keywordArray = Array.isArray(keywords) ? keywords : keywords.split(',').map((kw) => kw.trim());
-    const selectedKeywords = keywordArray.sort(() => 0.5 - Math.random()).slice(0, 3);
-    return selectedKeywords;
+
+  const handleCancel = () => {
+    setDrawerOpen(false); // Close the drawer when cancel is clicked
   };
 
   if (!currentActivity) {
@@ -190,16 +168,14 @@ const FullScreenSwiper: React.FC<FullScreenSwiperProps> = ({
     );
   }
 
-  const selectedKeywords = currentActivity.activities_keywords
-    ? getRandomKeywords(currentActivity.activities_keywords)
-    : [];
-
-  const location = attractionData
-    ? `${attractionData.city}, ${attractionData.country}`
-    : 'Location not available';
+  const location = useMemo(() => {
+    return attractionData
+      ? `${attractionData.city}, ${attractionData.country}`
+      : 'Location not available';
+  }, [attractionData]);
 
   const mapContainerStyle = {
-    height: '200px',
+    height: isMobile ? '150px' : '200px', // Adjust map height based on screen size
     width: '100%',
   };
 
@@ -208,193 +184,196 @@ const FullScreenSwiper: React.FC<FullScreenSwiperProps> = ({
         lat: attractionData.latitude,
         lng: attractionData.longitude,
       }
-    : { lat: 0, lng: 0 }; // Default center if location data isn't available
+    : { lat: 0, lng: 0 };
+
+  // Handle swipe gestures
+  const swipeHandlers = useSwipeable({
+    onSwipedUp: () => handleNextActivity(),
+    onSwipedDown: () => handlePreviousActivity(),
+    trackMouse: true, // Optional: allows mouse swiping
+  });
 
   return (
     <Box
-      ref={imageContainerRef}
+      {...swipeHandlers}
       sx={{
         position: 'relative',
-        maxWidth: '800px',
         width: '100%',
-        margin: '0 auto',
         height: '100vh',
         backgroundColor: theme.palette.background.default,
         overflow: 'hidden',
-        borderRadius: isLargeScreen ? '16px' : '0px',
-        boxShadow: isLargeScreen ? '0 4px 12px rgba(0, 0, 0, 0.1)' : 'none',
-        touchAction: 'pan-y',
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'center',
-      }}
-      onTouchStart={(e) => {
-        const startX = e.touches[0].clientX;
-        const handleSwipe = (endX: number) => {
-          if (startX - endX > 50) handleNextActivity(); // Swipe left
-          if (endX - startX > 50) handlePreviousActivity(); // Swipe right
-        };
-        e.currentTarget.ontouchend = (ev) => handleSwipe(ev.changedTouches[0].clientX);
+        alignItems: 'center',
       }}
     >
-      <img
-        src={currentActivity.imageUrl || 'default-image-url.jpg'}
-        alt={currentActivity.activity_full_name}
-        style={{
-          width: '100%',
-          height: isLargeScreen ? 'auto' : '100%',
-          maxHeight: isLargeScreen ? 'calc(100vh - 64px)' : '100%',
-          objectFit: 'cover',
-          borderRadius: isLargeScreen ? '16px' : '0px',
-          transition: 'transform 0.3s ease-in-out',
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          background: `linear-gradient(to bottom, transparent, #000)`,
-          borderRadius: isLargeScreen ? '16px' : '0px',
-          zIndex: 1,
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          width: '100%',
-          padding: '16px',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          borderBottomLeftRadius: isLargeScreen ? '16px' : '0px',
-          borderBottomRightRadius: isLargeScreen ? '16px' : '0px',
-          backdropFilter: 'blur(4px)',
-          zIndex: 2,
-        }}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+        style={{ width: '100%', height: '100%' }}
       >
-        {selectedKeywords.length > 0 && (
-          <Typography
-            variant="body2"
-            color="white"
-            sx={{
-              fontWeight: 300,
-              letterSpacing: '0.5px',
-              textShadow: '0px 0px 8px rgba(0, 0, 0, 0.5)',
-              marginBottom: '4px',
-              display: 'flex',
-              gap: '8px',
-            }}
-          >
-            {selectedKeywords.map((keyword, index) => (
-              <Box
-                key={index}
-                sx={{
-                  padding: '2px 6px',
-                  backgroundColor: theme.palette.secondary.main,
-                  borderRadius: '12px',
-                  display: 'inline-block',
-                  fontSize: '0.875rem',
-                }}
-              >
-                {keyword}
-              </Box>
-            ))}
-          </Typography>
-        )}
-        <Typography
-          variant="h5"
-          color="white"
+        <Box
           sx={{
-            fontWeight: 500,
-            letterSpacing: '0.5px',
-            textShadow: '0px 0px 12px rgba(0, 0, 0, 0.6)',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            borderRadius: '16px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
           }}
         >
-          {currentActivity.attraction_name || currentActivity.activity_full_name}
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          right: '16px',
-          transform: 'translateY(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          zIndex: 2,
-        }}
-      >
-        <Tooltip title="Add to Bucket List">
-          <IconButton
-            onClick={handleAddToBucketList}
+          <img
+            src={imageUrl || 'https://via.placeholder.com/800'}
+            alt={currentActivity.activity_full_name}
+            loading="lazy" // Lazy loading
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '16px',
+            }}
+          />
+          <Box
             sx={{
-              color: 'white',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              width: '100%',
+              padding: '16px',
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-              transition: 'background-color 0.3s ease, transform 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                transform: 'scale(1.1)',
-              },
+              zIndex: 2,
+              borderBottomLeftRadius: '16px',
+              borderBottomRightRadius: '16px',
             }}
           >
-            <FavoriteBorder />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Mark as Visited">
-          <IconButton
-            onClick={handleMarkAsVisited}
+            <Typography
+              variant="h5"
+              color="white"
+              sx={{
+                fontWeight: 500,
+                letterSpacing: '0.5px',
+                textShadow: '0px 0px 12px rgba(0, 0, 0, 0.6)',
+              }}
+            >
+              {currentActivity.activity_full_name}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="white"
+              sx={{
+                fontWeight: 300,
+                letterSpacing: '0.5px',
+                textShadow: '0px 0px 8px rgba(0, 0, 0, 0.5)',
+              }}
+            >
+              {location}
+            </Typography>
+          </Box>
+          <Box
             sx={{
-              color: 'white',
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-              transition: 'background-color 0.3s ease, transform 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                transform: 'scale(1.1)',
-              },
+              position: 'absolute',
+              top: '50%',
+              right: '16px',
+              transform: 'translateY(-50%)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              zIndex: 2,
             }}
           >
-            <StarBorder />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="More Info">
-          <IconButton
-            onClick={handleToggleDrawer(true)}
-            sx={{
-              color: 'white',
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-              transition: 'background-color 0.3s ease, transform 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                transform: 'scale(1.1)',
-              },
-            }}
-          >
-            <Info />
-          </IconButton>
-        </Tooltip>
-              <Tooltip title="Share">
-          <IconButton
-            onClick={handleShare}
-            sx={{
-              color: 'white',
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-              transition: 'background-color 0.3s ease, transform 0.3s ease',
-              '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                transform: 'scale(1.1)',
-              },
-            }}
-          >
-            <Share />
+            <Tooltip title="Add to Bucket List">
+              <IconButton
+                onClick={handleAddToBucketList}
+                sx={{
+                  color: 'white',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  borderRadius: '50%',
+                  transition: 'background-color 0.3s ease, transform 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    transform: 'scale(1.1)',
+                  },
+                }}
+              >
+                <FavoriteBorder />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Mark as Visited">
+              <IconButton
+                onClick={handleMarkAsVisited}
+                sx={{
+                  color: 'white',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  borderRadius: '50%',
+                  transition: 'background-color 0.3s ease, transform 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    transform: 'scale(1.1)',
+                  },
+                }}
+              >
+                <StarBorder />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="More Info">
+              <IconButton
+                onClick={() => setModalOpen(true)}
+                sx={{
+                  color: 'white',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  borderRadius: '50%',
+                  transition: 'background-color 0.3s ease, transform 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    transform: 'scale(1.1)',
+                  },
+                }}
+              >
+                <Info />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Share">
+              <IconButton
+                onClick={handleShare}
+                sx={{
+                  color: 'white',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  borderRadius: '50%',
+                  transition: 'background-color 0.3s ease, transform 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    transform: 'scale(1.1)',
+                  },
+                }}
+              >
+                <Share />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Skip">
+              <IconButton
+                onClick={() => {
+                  handleNextActivity(); // Skip to the next activity
+                  setModalOpen(false);  // Close the modal
+                }}
+                sx={{
+                  color: 'white',
+                  backgroundColor: 'rgba(255, 0, 0, 0.5)', // Red background for skip action
+                  borderRadius: '50%',
+                  transition: 'background-color 0.3s ease, transform 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 0, 0, 0.7)', // Darker red on hover
+                    transform: 'scale(1.1)', // Slightly enlarge on hover
+                  },
+                }}
+              >
+                <Close /> {/* Using Close icon for the skip action */}
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+      </motion.div>
 
-          </IconButton>
-        </Tooltip>
-      </Box>
       <SwipeableDrawer
         anchor="bottom"
         open={drawerOpen}
@@ -406,7 +385,7 @@ const FullScreenSwiper: React.FC<FullScreenSwiperProps> = ({
             borderTopRightRadius: '16px',
             padding: '16px',
             backgroundColor: theme.palette.background.default,
-            width: imageWidth || '100%',
+            width: '100%',
             maxHeight: '60vh',
             overflowY: 'auto',
             margin: '0 auto',
@@ -459,33 +438,29 @@ const FullScreenSwiper: React.FC<FullScreenSwiperProps> = ({
               </GoogleMap>
             </Box>
           )}
-
-          {selectedKeywords.length > 0 && (
-            <Box sx={{ marginTop: '16px' }}>
-              <Typography variant="body2" color="textPrimary" sx={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                Keywords:
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {selectedKeywords.map((keyword, index) => (
-                  <Typography
-                    key={index}
-                    variant="body2"
-                    color="textSecondary"
-                    sx={{
-                      backgroundColor: theme.palette.grey[200],
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    {keyword}
-                  </Typography>
-                ))}
-              </Box>
-            </Box>
-          )}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+            <Button variant="outlined" color="secondary" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </Box>
         </Box>
       </SwipeableDrawer>
+
+      <Suspense fallback={<div>Loading...</div>}>
+        <ActivityDetailsModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          activity={currentActivity}
+          attraction={{
+            attraction_id: currentActivity.attraction_id,
+            attraction_name: currentActivity.activity_full_name,
+            location_city: currentActivity.location_city,
+            location_country: currentActivity.location_country,
+          }}
+          onAddToBucketList={handleAddToBucketList}
+          onMarkAsVisited={handleMarkAsVisited}
+        />
+      </Suspense>
     </Box>
   );
 };

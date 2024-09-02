@@ -1,10 +1,10 @@
 // src/services/searchService.ts
 
 import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Activity } from '../types/activity';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { DatabaseItem } from '../types/databaseTypes';
 
-export const fetchSuggestions = async (input: string): Promise<Activity[]> => {
+export const fetchSuggestions = async (input: string): Promise<DatabaseItem[]> => {
   if (!input.trim()) {
     return [];
   }
@@ -17,18 +17,19 @@ export const fetchSuggestions = async (input: string): Promise<Activity[]> => {
     // Firestore query for partial matches using range (prefix-based matching)
     const q = query(
       activitiesRef,
-      where('activity_full_name', '>=', input),
-      where('activity_full_name', '<=', input + '\uf8ff')
+      where('activity_full_name', '>=', lowerCaseInput),
+      where('activity_full_name', '<=', lowerCaseInput + '\uf8ff'), // To handle the prefix
+      limit(10)  // Limit the number of results to 10 for better performance
     );
 
     const querySnapshot = await getDocs(q);
 
-    // Log the query result for debugging
-    console.log('Query Snapshot:', querySnapshot.docs.map(doc => doc.data()));
+    // Log the number of results found
+    console.log(`Found ${querySnapshot.size} activities matching "${input}".`);
 
-    // Map the results to the Activity type
+    // Map the results to the DatabaseItem type
     return querySnapshot.docs.map((doc) => {
-      const data = doc.data() as Activity;
+      const data = doc.data() as DatabaseItem;
       return {
         ...data,
         activity_id: doc.id,
@@ -36,7 +37,12 @@ export const fetchSuggestions = async (input: string): Promise<Activity[]> => {
     });
 
   } catch (error) {
-    console.error('Error fetching suggestions:', error);
+    if (error instanceof Error) {
+      console.error('Error fetching suggestions:', error.message);
+    } else {
+      console.error('Unexpected error fetching suggestions:', error);
+    }
+    // Return an empty array in case of an error
     return [];
   }
 };

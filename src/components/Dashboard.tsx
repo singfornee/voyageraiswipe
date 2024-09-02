@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Container, Typography, Box, Grid, Card, CardContent, CircularProgress as CircularProgressIndicator, Tooltip, Button } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { useBucketList } from '../contexts/BucketListContext';
@@ -10,21 +10,23 @@ import ExploreIcon from '@mui/icons-material/Explore';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
-import useTopPicks from '../hooks/useTopPicks';  // Import the custom hook
-import { Activity } from '../types/activity'; // Adjust the path based on your project structure
-
+import useTopPicks from '../hooks/useTopPicks';
+import { DatabaseItem } from '../types/databaseTypes'; // Adjust the path based on your project structure
+import MyMapView from './MyMapView'; // Import the map component
 
 const Dashboard: React.FC = () => {
   const { currentUser } = useAuth();
   const { bucketList, addToBucketList } = useBucketList();
   const { visitedList, addToVisitedList } = useVisitedList();
-  const { topPicks, loading, error } = useTopPicks(currentUser?.uid ?? '');  // Use the custom hook
+  const { topPicks, loading, error } = useTopPicks(currentUser?.uid ?? '');
   const navigate = useNavigate();
+
+  const [viewType, setViewType] = useState<'bucket' | 'visited'>('bucket'); // State for map toggle
 
   const isInBucketList = (activityId: string) => bucketList.some(item => item.activity_id === activityId);
   const isInVisitedList = (activityId: string) => visitedList.some(item => item.activity_id === activityId);
 
-  const handleAddToBucketList = async (activity: Activity) => {
+  const handleAddToBucketList = async (activity: DatabaseItem) => {
     if (!currentUser) return;
     if (!isInBucketList(activity.activity_id)) {
       try {
@@ -39,7 +41,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleMarkAsVisited = async (activity: Activity) => {
+  const handleMarkAsVisited = async (activity: DatabaseItem) => {
     if (!currentUser) return;
     if (!isInVisitedList(activity.activity_id)) {
       try {
@@ -145,7 +147,7 @@ const Dashboard: React.FC = () => {
                 textAlign: 'center',
                 background: 'linear-gradient(45deg, #6A5ACD 30%, #8A2BE2 90%)',
                 color: 'white',
-                height: '100%', // Ensure uniform height
+                height: '100%',
               }}
             >
               <Tooltip title="Keep exploring!" arrow>
@@ -173,7 +175,7 @@ const Dashboard: React.FC = () => {
                 textAlign: 'center',
                 background: 'linear-gradient(45deg, #2E335A 30%, #6A5ACD 90%)',
                 color: 'white',
-                height: '100%', // Ensure uniform height
+                height: '100%',
               }}
             >
               <Tooltip title="Amazing places you've been!" arrow>
@@ -201,7 +203,7 @@ const Dashboard: React.FC = () => {
                 textAlign: 'center',
                 background: 'linear-gradient(45deg, #FFD700 30%, #FFA500 90%)',
                 color: 'white',
-                height: '100%', // Ensure uniform height
+                height: '100%',
               }}
             >
               <Tooltip title="Total activities you've engaged with" arrow>
@@ -261,11 +263,17 @@ const Dashboard: React.FC = () => {
                 onMarkAsVisited={() => handleMarkAsVisited(activity)}
                 onClick={() => console.log('Activity clicked')}
                 className="recommended-card custom-card"
+                mode="grid"  // Add mode prop here
               />
             ))}
           </Box>
         </>
       )}
+
+      {/* Map Section */}
+      <Box sx={{ mt: 4, width: '100%', height: '400px' }}>
+        <MyMapView viewType={viewType} /> {/* Pass the view type if necessary */}
+      </Box>
     </Container>
   );
 };

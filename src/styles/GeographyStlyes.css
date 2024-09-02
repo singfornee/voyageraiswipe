@@ -1,0 +1,20 @@
+.geography-default {
+    fill: #eaeaec;
+    stroke: #d6d6da;
+  }
+  
+  .geography-highlighted {
+    fill: #ff5722;
+    stroke: #d6d6da;
+  }
+  
+  .geography-hover {
+    fill: #f53;
+    stroke: #d6d6da;
+  }
+  
+  .geography-pressed {
+    fill: #e42;
+    stroke: #d6d6da;
+  }
+  

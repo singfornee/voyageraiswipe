@@ -200,11 +200,24 @@ const importData = (filePath, collectionName, idField, isCompositeId = false) =>
               isValid = false;
             }
             break;
-
-          default:
-            console.error('Unknown collection name:', collectionName);
-            isValid = false;
-        }
+          
+              // Check that each required field is not undefined or empty
+              isValid = requiredFields.every(field => {
+                return cleanedRow[field] !== undefined && cleanedRow[field].trim() !== '';
+              });
+          
+              if (isValid) {
+                console.log(`Attempting to add document with ID: ${documentId}`, cleanedRow);
+                await collectionRef.doc(documentId).set(cleanedRow)
+                  .then(() => console.log(`Successfully added document with ID: ${documentId}`))
+                  .catch(err => console.error(`Failed to add document with ID: ${documentId}`, err));
+              }
+              break;
+          
+            default:
+              console.error('Unknown collection name:', collectionName);
+              isValid = false;
+          }
 
         if (!isValid) {
           return; // Skip this row if it's missing required fields

@@ -3,48 +3,52 @@ import { useNavigate } from 'react-router-dom';
 import { Box, TextField, InputAdornment, IconButton, List, ListItem, ListItemText, CircularProgress, Typography } from '@mui/material';
 import { Search, Clear } from '@mui/icons-material';
 import { useSearch } from '../contexts/SearchContext';
-import { Activity } from '../types/activity';
+import { DatabaseItem } from '../types/databaseTypes';
 import debounce from 'lodash.debounce';
 
-const getTopMatches = (activities: Activity[], term: string, limit: number): Activity[] => {
+const getTopMatches = (activities: DatabaseItem[], term: string, limit: number): DatabaseItem[] => {
   const normalizedTerm = term.toLowerCase();
 
-  const scoredActivities = activities.map((activity) => {
-    const activityName = activity.activity_full_name?.toLowerCase() || '';
-    const score = getMatchScore(activityName, normalizedTerm);
-    return { activity, score };
-  });
+  return (activities || [])
+    .filter(activity => {
+      const activityName = activity.activity_full_name?.toLowerCase() || '';
+      const cityName = activity.location_city?.toLowerCase() || '';
+      const countryName = activity.location_country?.toLowerCase() || '';
+      const keywords = Array.isArray(activity.activities_keywords)
+        ? activity.activities_keywords.join(', ').toLowerCase()
+        : '';
 
-  return scoredActivities
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((item) => item.activity);
-};
-
-const getMatchScore = (text: string, term: string): number => {
-  if (text === term) return 100;
-  if (text.startsWith(term)) return 75;
-  if (text.includes(term)) return 50;
-  return 0;
+      return (
+        activityName.includes(normalizedTerm) ||
+        cityName.includes(normalizedTerm) ||
+        countryName.includes(normalizedTerm) ||
+        keywords.includes(normalizedTerm)
+      );
+    })
+    .slice(0, limit);
 };
 
 const SearchBar: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { performSearch, searchResults, isLoading } = useSearch();
+  const { performSearch, isLoading } = useSearch();
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const [localSearchResults, setLocalSearchResults] = useState<Activity[]>([]);
-  const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [localSearchResults, setLocalSearchResults] = useState<DatabaseItem[]>([]);
   const navigate = useNavigate();
 
   const debouncedSearch = useCallback(
     debounce(async (term: string) => {
       if (term.trim()) {
-        const results: Activity[] = await performSearch(term);
-        if (results && results.length > 0) {
-          const topMatches = getTopMatches(results, term, 5);
+        try {
+          const results: DatabaseItem[] = await performSearch(term) || []; // Ensure results is an array
+          const topMatches = getTopMatches(results, term, 6); // Get top 6 matches
           setLocalSearchResults(topMatches);
+        } catch (error) {
+          console.error('Error during search:', error);
+          setLocalSearchResults([]);  // Handle error by clearing results
         }
+      } else {
+        setLocalSearchResults([]);
       }
     }, 300),
     [performSearch]
@@ -57,6 +61,7 @@ const SearchBar: React.FC = () => {
     } else {
       setShowSuggestions(false);
       setHighlightedIndex(-1);
+      setLocalSearchResults([]);
     }
   }, [searchTerm, debouncedSearch]);
 
@@ -65,12 +70,7 @@ const SearchBar: React.FC = () => {
       if (highlightedIndex >= 0 && highlightedIndex < localSearchResults.length) {
         handleSuggestionClick(localSearchResults[highlightedIndex]);
       } else {
-        performSearch(searchTerm).then((results: Activity[]) => {
-          if (results && results.length > 0) {
-            setSearchHistory((prevHistory: string[]) => [searchTerm, ...prevHistory.slice(0, 4)]);
-            navigate('/search-results');
-          }
-        });
+        navigate('/search-results');
       }
       setShowSuggestions(false);
     } else if (event.key === 'ArrowDown') {
@@ -84,9 +84,8 @@ const SearchBar: React.FC = () => {
     }
   };
 
-  const handleSuggestionClick = (suggestion: Activity) => {
-    const fullName = suggestion.activity_full_name || 'Unknown Activity';
-    setSearchTerm(fullName);
+  const handleSuggestionClick = (suggestion: DatabaseItem) => {
+    setSearchTerm(suggestion.activity_full_name || 'Unknown Activity');
     navigate('/search-results');
   };
 

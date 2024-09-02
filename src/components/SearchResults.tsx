@@ -20,6 +20,7 @@ const SearchResults: React.FC = () => {
                 onAddToBucketList={() => Promise.resolve()}
                 onMarkAsVisited={() => Promise.resolve()}
                 onClick={() => {}}
+                mode="grid"  // Provide the required `mode` prop here
               />
             </Grid>
           ))}

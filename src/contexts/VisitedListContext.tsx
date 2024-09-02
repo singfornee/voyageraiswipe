@@ -1,15 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
-import { Activity } from '../types/activity';
+import { DatabaseItem } from '../types/databaseTypes';
 import { useAuth } from './AuthContext';
 import { db } from '../firebase';
 import { collection, getDocs, setDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 
 interface VisitedListContextProps {
-  visitedList: Activity[];
-  setVisitedList: React.Dispatch<React.SetStateAction<Activity[]>>;
-  addToVisitedList: (activity: Activity) => void;
-  removeVisitedActivity: (activityId: string) => void;
-  fetchVisitedList: () => void;
+  visitedList: DatabaseItem[];
+  setVisitedList: React.Dispatch<React.SetStateAction<DatabaseItem[]>>;
+  addToVisitedList: (activity: DatabaseItem) => Promise<void>;
+  removeVisitedActivity: (activityId: string) => Promise<void>;
+  fetchVisitedList: () => Promise<void>;
+  toggleVisitedList: (activity: DatabaseItem) => Promise<void>;
 }
 
 const VisitedListContext = createContext<VisitedListContextProps | undefined>(undefined);
@@ -24,7 +25,7 @@ export const useVisitedList = () => {
 
 export const VisitedListProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
-  const [visitedList, setVisitedList] = useState<Activity[]>([]);
+  const [visitedList, setVisitedList] = useState<DatabaseItem[]>([]);
 
   const fetchVisitedList = async () => {
     if (!currentUser) return;
@@ -34,14 +35,14 @@ export const VisitedListProvider: React.FC<{ children: ReactNode }> = ({ childre
       const q = query(visitedListRef, where('userId', '==', currentUser.uid), where('status', '==', 'visited'));
       const querySnapshot = await getDocs(q);
 
-      const activities: Activity[] = querySnapshot.docs.map((doc) => doc.data() as Activity);
+      const activities: DatabaseItem[] = querySnapshot.docs.map((doc) => doc.data() as DatabaseItem);
       setVisitedList(activities);
     } catch (error) {
       console.error('Error fetching visited list:', error);
     }
   };
 
-  const addToVisitedList = async (activity: Activity) => {
+  const addToVisitedList = async (activity: DatabaseItem) => {
     if (!currentUser) return;
 
     try {
@@ -59,17 +60,6 @@ export const VisitedListProvider: React.FC<{ children: ReactNode }> = ({ childre
     }
   };
 
-  const toggleVisitedList = async (activity: Activity) => {
-    const isAlreadyInList = visitedList.some(item => item.activity_id === activity.activity_id);
-  
-    if (isAlreadyInList) {
-      await removeVisitedActivity(activity.activity_id);
-    } else {
-      await addToVisitedList(activity);
-    }
-  };
-  
-
   const removeVisitedActivity = async (activityId: string) => {
     if (!currentUser) return;
 
@@ -80,6 +70,16 @@ export const VisitedListProvider: React.FC<{ children: ReactNode }> = ({ childre
       setVisitedList((prevList) => prevList.filter((activity) => activity.activity_id !== activityId));
     } catch (error) {
       console.error('Error removing from visited list:', error);
+    }
+  };
+
+  const toggleVisitedList = async (activity: DatabaseItem) => {
+    const isAlreadyInList = visitedList.some(item => item.activity_id === activity.activity_id);
+  
+    if (isAlreadyInList) {
+      await removeVisitedActivity(activity.activity_id);
+    } else {
+      await addToVisitedList(activity);
     }
   };
 
@@ -95,6 +95,7 @@ export const VisitedListProvider: React.FC<{ children: ReactNode }> = ({ childre
     addToVisitedList,
     removeVisitedActivity,
     fetchVisitedList,
+    toggleVisitedList,
   }), [visitedList]);
 
   return (

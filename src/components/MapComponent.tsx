@@ -1,68 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import { GoogleMap, Marker } from '@react-google-maps/api';
-import { fetchAttractionById } from '../firestore'; // Ensure correct import
-import { Activity } from '../types/activity'; // Ensure correct import
+import React from 'react';
+import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
+import { DatabaseItem } from '../types/databaseTypes';
 import { toast } from 'react-toastify';
 
 interface MapComponentProps {
-  currentActivity: Activity;
+  currentActivity: DatabaseItem;
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({ currentActivity }) => {
-  const [attractionData, setAttractionData] = useState<{
-    city: string;
-    country: string;
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '', // Replace with your actual API key
+  });  
 
-  useEffect(() => {
-    const loadAttractionData = async () => {
-      try {
-        if (currentActivity && currentActivity.attraction_id) {
-          const attraction = await fetchAttractionById(currentActivity.attraction_id);
-          if (attraction) {
-            const latitude = Number(attraction.latitude);
-            const longitude = Number(attraction.longitude);
+  if (loadError) {
+    toast.error('Error loading Google Maps');
+    return <div>Map not available</div>;
+  }
 
-            if (!isNaN(latitude) && !isNaN(longitude)) {
-              setAttractionData({
-                city: attraction.location_city || 'Unknown City',
-                country: attraction.location_country || 'Unknown Country',
-                latitude,
-                longitude,
-              });
-            } else {
-              toast.error('Invalid location data.');
-            }
-          } else {
-            toast.error('Attraction data is not available.');
-          }
-        }
-      } catch (error) {
-        toast.error('Failed to load attraction details.');
-      }
-    };
-
-    loadAttractionData();
-  }, [currentActivity]);
-
-  if (!attractionData) {
+  if (!isLoaded) {
     return <div>Loading map...</div>;
+  }
+
+  if (!currentActivity.latitude || !currentActivity.longitude) {
+    toast.error('Invalid location data.');
+    return <div>Map not available</div>;
   }
 
   const mapContainerStyle = {
     height: '200px',
     width: '100%',
+    borderRadius: '8px',
   };
 
   const mapCenter = {
-    lat: attractionData.latitude,
-    lng: attractionData.longitude,
+    lat: Number(currentActivity.latitude),
+    lng: Number(currentActivity.longitude),
   };
 
   return (
-    <GoogleMap mapContainerStyle={mapContainerStyle} zoom={14} center={mapCenter}>
+    <GoogleMap
+      mapContainerStyle={mapContainerStyle}
+      zoom={14}
+      center={mapCenter}
+    >
       <Marker position={mapCenter} />
     </GoogleMap>
   );

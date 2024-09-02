@@ -9,6 +9,7 @@ import {
   useTheme,
   Tooltip,
   Skeleton,
+  Divider,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -16,46 +17,28 @@ import PlaceIcon from '@mui/icons-material/Place';
 import CategoryIcon from '@mui/icons-material/Category';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import { GoogleMap, useLoadScript, Marker } from '@react-google-maps/api';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import TimerIcon from '@mui/icons-material/Timer';
+import LightbulbIcon from '@mui/icons-material/Lightbulb';
+import StarIcon from '@mui/icons-material/Star';
+import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 import '../styles/ActivityDetailsModal.css';
-import { Activity, Attraction } from '../types/activity';
+import { DatabaseItem } from '../types/databaseTypes';
 
 interface ActivityDetailsModalProps {
   open: boolean;
   onClose: () => void;
-  activity: Activity | null;
-  attraction: Attraction | null;
-  onAddToBucketList: () => void;
-  onMarkAsVisited: () => void;
-}
-
-const MapComponent: React.FC<{ latitude: number; longitude: number }> = ({ latitude, longitude }) => {
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '', // Add your API key here
-  });
-
-  if (loadError) {
-    console.error("Google Maps load error:", loadError);
-    return <div>Error loading map</div>;
-  }
-
-  if (!isLoaded) return <div>Loading...</div>;
-
-  const center = {
-    lat: latitude,
-    lng: longitude,
+  activity: DatabaseItem | null; // Ensure this is nullable if the activity can be null
+  attraction: { // Make this required, assuming you'll always have attraction info when opening the modal
+    attraction_id: string;
+    attraction_name: string;
+    location_city: string;
+    location_country: string; // Ensure this property is passed
+    opening_hour?: string; // Optional if it may not be present
   };
-
-  return (
-    <GoogleMap
-      center={center}
-      zoom={14}
-      mapContainerClassName="map-container"
-    >
-      <Marker position={center} />
-    </GoogleMap>
-  );
-};
+  onAddToBucketList: (activity: DatabaseItem) => void; // Change here
+  onMarkAsVisited: (activity: DatabaseItem) => void; // Change here
+}
 
 const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   open,
@@ -68,20 +51,31 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
   const theme = useTheme();
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
 
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '', // Replace with your actual API key
+  });
+
   useEffect(() => {
-    if (attraction && attraction.latitude && attraction.longitude) {
-      setMapCenter({
-        lat: Number(attraction.latitude),
-        lng: Number(attraction.longitude),
-      });
+    if (activity) {
+      const lat = parseFloat(activity.latitude?.toString() || '0');
+      const lng = parseFloat(activity.longitude?.toString() || '0');
+
+      if (!isNaN(lat) && !isNaN(lng)) {
+        setMapCenter({ lat, lng });
+      } else {
+        console.error("Invalid latitude or longitude:", { lat, lng });
+        setMapCenter(null);
+      }
     }
-  }, [attraction]);
+  }, [activity]);
 
   const handleClose = useCallback(() => {
     onClose();
   }, [onClose]);
 
-  if (!activity || !attraction) return null;
+  if (!activity) return null;
+  if (loadError) return <div>Error loading map</div>;
+  if (!isLoaded) return <Skeleton variant="rectangular" width="100%" height={300} />;
 
   return (
     <Modal open={open} onClose={handleClose} className="activity-details-modal">
@@ -92,8 +86,8 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
           boxShadow: 24,
           p: 4,
           borderRadius: 4,
-          maxWidth: '600px',
-          width: '90%',
+          maxWidth: '700px',
+          width: '100%',
           position: 'absolute',
           top: '50%',
           left: '50%',
@@ -101,6 +95,10 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
           outline: 'none',
           overflowY: 'auto',
           maxHeight: '90vh',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+          scrollbarWidth: 'none',
         }}
       >
         <IconButton
@@ -121,77 +119,152 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
             <CloseIcon />
           </Tooltip>
         </IconButton>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
           {activity.activity_full_name}
         </Typography>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12}>
-            {mapCenter ? (
-              <MapComponent latitude={mapCenter.lat} longitude={mapCenter.lng} />
-            ) : (
-              <Skeleton variant="rectangular" width="100%" height={300} />
-            )}
-          </Grid>
+        {mapCenter ? (
+          <GoogleMap
+            center={mapCenter}
+            zoom={14}
+            mapContainerStyle={{
+              width: '100%',
+              height: '300px',
+              borderRadius: '8px',
+              marginTop: '16px',
+            }}
+          >
+            <Marker position={mapCenter} />
+          </GoogleMap>
+        ) : (
+          <Typography variant="body2" color="error" sx={{ mb: 2, textAlign: 'center' }}>
+            Map not available due to invalid coordinates.
+          </Typography>
+        )}
+        <Grid container spacing={2} alignItems="flex-start" sx={{ marginTop: '16px' }}>
           <Grid item xs={12} sm={6}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <CategoryIcon
-                sx={{
-                  color: theme.palette.primary.main,
-                  marginRight: '8px',
-                  '&:hover': {
-                    color: theme.palette.primary.dark,
-                  },
-                  transition: 'color 0.3s ease',
-                }}
-              />
-              <Typography variant="body1">{attraction.attraction_category}</Typography>
+              <Tooltip title="Category">
+                <CategoryIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                    marginRight: '8px',
+                    '&:hover': {
+                      color: theme.palette.primary.dark,
+                    },
+                    transition: 'color 0.3s ease',
+                  }}
+                />
+              </Tooltip>
+              <Typography variant="body1">{activity.attraction_category}</Typography>
             </Box>
           </Grid>
           <Grid item xs={12} sm={6}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <PlaceIcon
-                sx={{
-                  color: theme.palette.primary.main,
-                  marginRight: '8px',
-                  '&:hover': {
-                    color: theme.palette.primary.dark,
-                  },
-                  transition: 'color 0.3s ease',
-                }}
-              />
+              <Tooltip title="Location">
+                <PlaceIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                    marginRight: '8px',
+                    '&:hover': {
+                      color: theme.palette.primary.dark,
+                    },
+                    transition: 'color 0.3s ease',
+                  }}
+                />
+              </Tooltip>
               <Typography variant="body1">
-                {attraction.location_city}, {attraction.location_country}
+                {activity.location_city}, {activity.location_country}
               </Typography>
             </Box>
           </Grid>
           <Grid item xs={12}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AccessTimeIcon
-                sx={{
-                  color: theme.palette.primary.main,
-                  marginRight: '8px',
-                  '&:hover': {
-                    color: theme.palette.primary.dark,
-                  },
-                  transition: 'color 0.3s ease',
-                }}
-              />
+              <Tooltip title="Opening Hours">
+                <AccessTimeIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                    marginRight: '8px',
+                    '&:hover': {
+                      color: theme.palette.primary.dark,
+                    },
+                    transition: 'color 0.3s ease',
+                  }}
+                />
+              </Tooltip>
               <Typography variant="body1">
-                {attraction.opening_hour || 'Opening hours not available'}
+                {activity.opening_hour ? activity.opening_hour : 'Opening hours not available'}
               </Typography>
             </Box>
           </Grid>
+          <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <Tooltip title="Duration">
+                <TimerIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                    marginRight: '8px',
+                    '&:hover': {
+                      color: theme.palette.primary.dark,
+                    },
+                    transition: 'color 0.3s ease',
+                  }}
+                />
+              </Tooltip>
+              <Typography variant="body1">
+                {activity.min_duration} - {activity.max_duration}
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+              <Tooltip title="Price">
+                <MonetizationOnIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                    marginRight: '8px',
+                    '&:hover': {
+                      color: theme.palette.primary.dark,
+                    },
+                    transition: 'color 0.3s ease',
+                  }}
+                />
+              </Tooltip>
+              <Typography variant="body1">
+                {activity.price} {activity.currency}
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="h6" sx={{ mt: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+              <Tooltip title="Unique Features">
+                <LightbulbIcon sx={{ marginRight: '8px', color: theme.palette.warning.main }} />
+              </Tooltip>
+              Unique Features
+            </Typography>
+            <Divider sx={{ mb: 1 }} />
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              {activity.unique_feature_one || 'No unique feature available'}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              {activity.unique_feature_two || 'No unique feature available'}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              {activity.unique_feature_three || 'No unique feature available'}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="h6" sx={{ mt: 2, fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+              <Tooltip title="Secret Tip">
+                <StarIcon sx={{ marginRight: '8px', color: theme.palette.warning.main }} />
+              </Tooltip>
+              Secret Tip
+            </Typography>
+            <Divider sx={{ mb: 1 }} />
+            <Typography variant="body2">
+              {activity.secret_tip || 'No secret tip available'}
+            </Typography>
+          </Grid>
         </Grid>
-        <Typography
-          variant="body2"
-          sx={{
-            mt: 2,
-            lineHeight: 1.6,
-            color: theme.palette.text.secondary,
-          }}
-        >
-          {activity.activity_description}
-        </Typography>
         <Box
           sx={{
             mt: 3,
@@ -213,7 +286,11 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
               },
             }}
             aria-label="Add to Bucket List"
-            onClick={onAddToBucketList}
+            onClick={() => {
+              if (activity) {
+                onAddToBucketList(activity); // Pass the activity to the handler
+              }
+            }}
           >
             Add to Bucket List
           </Button>
@@ -231,7 +308,11 @@ const ActivityDetailsModal: React.FC<ActivityDetailsModalProps> = ({
               },
             }}
             aria-label="Mark as Visited"
-            onClick={onMarkAsVisited}
+            onClick={() => {
+              if (activity) {
+                onMarkAsVisited(activity); // Pass the activity to the handler
+              }
+            }}
           >
             Mark as Visited
           </Button>

@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, CircularProgress, Typography, Button } from '@mui/material';
-import { fetchActivitiesFromFirestore, fetchAttractionById } from '../firestore';
+import { Box, Typography, Button, CircularProgress, Grid } from '@mui/material';
 import { useBucketList } from '../contexts/BucketListContext';
 import { useVisitedList } from '../contexts/VisitedListContext';
 import ActivityCard from './ActivityCard';
 import ActivityDetailsModal from './ActivityDetailsModal';
 import FullScreenSwiper from './FullScreenSwiper';
-import '../styles/Explore.css';
-import { Activity, Attraction } from '../types/activity';
+import { DatabaseItem } from '../types/databaseTypes';
 import { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import { useToastNotification, ToastNotificationContainer } from './notifications';
-import { fetchAttractionPhoto } from '../api/unsplashApi';
+import { useToastNotification } from '../contexts/NotificationContext'; 
+import ToastNotificationContainer from './ToastNotificationContainer'; 
+import { fetchActivitiesFromFirestore } from '../firestore';
+import '../styles/Explore.css';
 
 const Explore: React.FC = () => {
   const { bucketList, addToBucketList, removeFromBucketList } = useBucketList();
@@ -18,80 +18,66 @@ const Explore: React.FC = () => {
 
   const [mode, setMode] = useState<'grid' | 'fullscreen'>('grid');
   const [loading, setLoading] = useState(false);
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<DatabaseItem[]>([]);
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [currentActivity, setCurrentActivity] = useState<Activity | null>(null);
-  const [currentAttraction, setCurrentAttraction] = useState<Attraction | null>(null);
+  const [currentActivity, setCurrentActivity] = useState<DatabaseItem | null>(null);
+  const [currentAttraction, setCurrentAttraction] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [imageCache, setImageCache] = useState<{ [key: string]: string }>({});
-  const { showSuccessToast, showErrorToast } = useToastNotification();
+  const { showSuccessToast, showErrorToast } = useToastNotification(); 
 
   useEffect(() => {
-    loadMoreActivities(); // Initial load
+    loadMoreActivities();
   }, []);
 
   const loadMoreActivities = async () => {
     if (loading || !hasMore) return;
-  
+
     try {
       setLoading(true);
-  
-      // Fetch new activities and the last visible document from Firestore
       const { activities: newActivities, lastVisible: newLastVisible } = await fetchActivitiesFromFirestore(lastVisible, 18);
-  
-      if (newActivities.length > 0) {
-        // Fetch images for the new activities
-        const imagePromises = newActivities.map(async (activity) => {
-          const imageUrl = await fetchActivityImage(activity);
-          return { ...activity, imageUrl };
-        });
-  
-        const activitiesWithImages = await Promise.all(imagePromises);
-  
-        // Filter out any activities that are already present in the state
-        const uniqueActivities = activitiesWithImages.filter(
-          (activity) => !activities.some((existingActivity) => existingActivity.activity_id === activity.activity_id)
-        );
-  
-        // Update state with the new, unique activities
-        setActivities((prev) => [...prev, ...uniqueActivities]);
-        setLastVisible(newLastVisible);
-      } else {
-        setHasMore(false); // No more items to load
-      }
+      const uniqueActivities = newActivities.filter(
+        (activity) => !activities.some((existingActivity) => existingActivity.activity_id === activity.activity_id)
+      );
+
+      setActivities((prev) => [...prev, ...uniqueActivities]);
+      setLastVisible(newLastVisible);
+      setHasMore(newActivities.length > 0);
     } catch (error) {
       console.error('Error fetching activities:', error);
-      showErrorToast('Failed to load activities. Please try again later.');
+      showErrorToast('Failed to load activities. Please try again later.'); 
     } finally {
       setLoading(false);
     }
   };
-  
-  
 
-  const fetchActivityImage = useCallback(async (activity: Activity): Promise<string> => {
-    if (imageCache[activity.activity_id]) {
-      return imageCache[activity.activity_id];
-    }
-
-    const photoUrl = (await fetchAttractionPhoto(activity.activity_full_name || activity.activity_name || 'Unknown')) || 'default-image-url.jpg';
-    setImageCache((prevCache) => ({
-      ...prevCache,
-      [activity.activity_id]: photoUrl,
-    }));
-    return photoUrl;
-  }, [imageCache]);
-
-  const handleCardClick = async (activity: Activity) => {
+  const handleAddToBucketList = useCallback(async (activity: DatabaseItem) => {
     try {
-      setCurrentActivity(activity);
-      const attraction = await fetchAttractionById(activity.attraction_id);
-      setCurrentAttraction(attraction);
-      setIsModalOpen(true);
+      await addToBucketList(activity);
+      showSuccessToast(`${activity.activity_full_name} added to Bucket List!`);
     } catch (error) {
-      console.error('Error fetching attraction details:', error);
+      showErrorToast('Failed to add to Bucket List.');
     }
+  }, [addToBucketList]);
+
+  const handleMarkAsVisited = useCallback(async (activity: DatabaseItem) => {
+    try {
+      await addToVisitedList(activity);
+      showSuccessToast(`${activity.activity_full_name} marked as visited!`);
+    } catch (error) {
+      showErrorToast('Failed to mark as visited.');
+    }
+  }, [addToVisitedList]);
+
+  const handleCardClick = (activity: DatabaseItem) => {
+    setCurrentActivity(activity);
+    setCurrentAttraction({
+      attraction_id: activity.attraction_id,
+      attraction_name: activity.attraction_name,
+      location_city: activity.location_city,
+      location_country: activity.location_country, // Added country here
+    });
+    setIsModalOpen(true);
   };
 
   const handleModalClose = () => {
@@ -101,95 +87,92 @@ const Explore: React.FC = () => {
   };
 
   const toggleMode = () => {
-    setMode((prevMode) => (prevMode === 'grid' ? 'fullscreen' : 'grid'));
+    setMode(prevMode => (prevMode === 'grid' ? 'fullscreen' : 'grid'));
   };
 
-  const handleToggleBucketList = async (activity: Activity) => {
+  const handleToggleListChange = async (activity: DatabaseItem, listType: 'bucketList' | 'visitedList') => {
     try {
-      const isAlreadyInList = bucketList.some(item => item.activity_id === activity.activity_id);
+      const list = listType === 'bucketList' ? bucketList : visitedList;
+      const isInList = list.some(item => item.activity_id === activity.activity_id);
 
-      if (isAlreadyInList) {
-        await removeFromBucketList(activity.activity_id);
-        showSuccessToast(`${activity.activity_full_name} removed from Bucket List`);
+      if (listType === 'bucketList') {
+        if (isInList) {
+          await removeFromBucketList(activity.activity_id);
+          showSuccessToast(`${activity.activity_full_name} removed from Bucket List`);
+        } else {
+          await addToBucketList(activity);
+          showSuccessToast(`${activity.activity_full_name} added to Bucket List`);
+        }
       } else {
-        await addToBucketList(activity);
-        showSuccessToast(`${activity.activity_full_name} added to Bucket List`);
+        if (isInList) {
+          await removeVisitedActivity(activity.activity_id);
+          showSuccessToast(`${activity.activity_full_name} removed from Visited List`);
+        } else {
+          await addToVisitedList(activity);
+          showSuccessToast(`${activity.activity_full_name} marked as visited`);
+        }
       }
     } catch (error) {
-      showErrorToast(`Failed to update Bucket List for ${activity.activity_full_name}`);
-    }
-  };
-
-  const handleToggleVisitedList = async (activity: Activity) => {
-    try {
-      const isAlreadyInList = visitedList.some(item => item.activity_id === activity.activity_id);
-
-      if (isAlreadyInList) {
-        await removeVisitedActivity(activity.activity_id);
-        showSuccessToast(`${activity.activity_full_name} removed from Visited List`);
-      } else {
-        await addToVisitedList(activity);
-        showSuccessToast(`${activity.activity_full_name} marked as visited`);
-      }
-    } catch (error) {
-      showErrorToast(`Failed to update Visited List for ${activity.activity_full_name}`);
+      showErrorToast(`Failed to update ${listType} for ${activity.activity_full_name}`);
     }
   };
 
   return (
     <Box sx={{ padding: '16px', minHeight: '100vh' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <Typography variant="h4">Explore</Typography>
-        <Button onClick={toggleMode}>
+      <Typography variant="h4" sx={{ marginBottom: '16px', textAlign: 'center', color: '#ffffff' }}>
+        Explore Activities
+      </Typography>
+      <Box sx={{ textAlign: 'center', marginBottom: '16px' }}>
+        <Button variant="contained" onClick={toggleMode}>
           {mode === 'grid' ? 'Switch to Fullscreen' : 'Switch to Grid'}
         </Button>
       </Box>
-      {mode === 'grid' ? (
-        <>
-          <Box className="explore-grid-container">
-            {activities.map((activity, index) => (
-              <Box 
-                className="activity-card-container"
-                key={`${activity.activity_id}-${index}`}
-              >
-                <ActivityCard
-                  activity={activity}
-                  isFavorite={bucketList.some((item) => item.activity_id === activity.activity_id)}
-                  isVisited={visitedList.some((item) => item.activity_id === activity.activity_id)}
-                  onAddToBucketList={() => handleToggleBucketList(activity)}
-                  onMarkAsVisited={() => handleToggleVisitedList(activity)}
-                  onClick={() => handleCardClick(activity)}
-                  mode="grid"
-                />
-              </Box>
-            ))}
-          </Box>
-          {hasMore && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-              <Button variant="contained" onClick={loadMoreActivities} disabled={loading}>
-                {loading ? <CircularProgress size={24} /> : 'Load More'}
-              </Button>
-            </Box>
-          )}
-        </>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+          <CircularProgress />
+        </Box>
       ) : (
-        <FullScreenSwiper
-          activities={activities}
-          bucketList={bucketList}
-          visitedList={visitedList}
-        />
+        mode === 'grid' ? (
+          <Grid container spacing={2} sx={{ justifyContent: 'center' }}>
+            {activities.length > 0 ? (
+              activities.map((activity, index) => (
+                <Grid item xs={12} sm={6} md={4} key={`${activity.activity_id}-${index}`}>
+                  <ActivityCard
+                    activity={activity}
+                    isFavorite={bucketList.some(item => item.activity_id === activity.activity_id)}
+                    isVisited={visitedList.some(item => item.activity_id === activity.activity_id)}
+                    onAddToBucketList={() => handleToggleListChange(activity, 'bucketList')}
+                    onMarkAsVisited={() => handleToggleListChange(activity, 'visitedList')}
+                    onClick={() => handleCardClick(activity)}
+                    mode={mode}
+                  />
+                </Grid>
+              ))
+            ) : (
+              <Typography sx={{ textAlign: 'center', width: '100%', padding: '20px', color: '#999' }}>
+                No activities available.
+              </Typography>
+            )}
+          </Grid>
+        ) : (
+          <FullScreenSwiper
+            activities={activities}
+            bucketList={bucketList}
+            visitedList={visitedList}
+            onAddToBucketList={handleAddToBucketList}
+            onMarkAsVisited={handleMarkAsVisited}
+          />
+        )
       )}
-      
-      {currentActivity && currentAttraction && (
+      {currentActivity && (
         <ActivityDetailsModal
           open={isModalOpen}
           onClose={handleModalClose}
           activity={currentActivity}
           attraction={currentAttraction}
-          onAddToBucketList={() => handleToggleBucketList(currentActivity)}
-          onMarkAsVisited={() => handleToggleVisitedList(currentActivity)}
-/>
-
+          onAddToBucketList={() => handleToggleListChange(currentActivity, 'bucketList')}
+          onMarkAsVisited={() => handleToggleListChange(currentActivity, 'visitedList')}
+        />
       )}
       <ToastNotificationContainer />
     </Box>
